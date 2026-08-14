@@ -1,0 +1,3128 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}	% Para caracteres en español
+\usepackage{amsmath,amsthm,amsfonts,amssymb,amscd}
+\usepackage{multirow,booktabs}
+\usepackage[table]{xcolor}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{mathrsfs}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{calc}
+\usepackage{multicol}
+\usepackage{cancel}
+\usepackage{tikz}
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage[margin=3cm]{geometry}
+\usepackage{amsmath}
+\newlength{\tabcont}
+\setlength{\parindent}{0.0in}
+\setlength{\parskip}{0.05in}
+\usepackage{empheq}
+\usepackage{framed}
+\usepackage{multicol}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphbox}
+\graphicspath{ {figures/} }
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\colorlet{shadecolor}{orange!15}
+\parindent 0in
+\parskip 12pt
+\geometry{margin=1in, headsep=0.25in}
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
+\newtheorem{reg}{Rule}
+\newtheorem{exer}{Exercise}
+\newtheorem{note}{Note}
+\newtheorem{example}{Example}
+\newtheorem{theorem}{Theorem}
+\newcommand{\indep}{\perp\!\!\!\!\perp} 
+\begin{document}
+\title{Report}
+
+\thispagestyle{empty}
+
+\begin{center}
+{\LARGE \bf PHC 7091 Notes}\\
+\end{center}
+\tableofcontents
+\newpage
+\section{Generalized Linear Model}
+\subsection{Canonical GLM}
+
+Let $Y_1,\dots,Y_n$ be independent random variables. A canonical GLM assumes that
+each $Y_i$ follows an exponential dispersion family distribution with density
+\[
+f(y_i \mid \theta_i, \phi)
+=
+\exp\!\left(
+\frac{y_i \theta_i - b(\theta_i)}{a(\phi)}
++ c(y_i,\phi)
+\right),
+\]
+where
+\begin{itemize}
+  \item $\theta_i$ is the \emph{natural (canonical) parameter},
+  \item $\phi$ is the \emph{dispersion parameter},
+  \item $a(\phi)$ is a known positive function,
+  \item $b(\theta)$ is the cumulant (log-partition) function,
+  \item $c(y,\phi)$ does not depend on $\theta_i$.
+\end{itemize}
+\paragraph{Canonical link.}
+The canonical link function satisfies
+\[
+\theta_i = \eta_i = x_i^\top \beta,
+\]
+where $x_i$ is the covariate vector and $\beta$ is the regression coefficient vector.
+\paragraph{Mean and variance.}
+The first two moments are
+\[
+\mathbb{E}[Y_i] = \mu_i = b'(\theta_i),
+\qquad
+\mathrm{Var}(Y_i) = a(\phi)\, b''(\theta_i).
+\]
+Equivalently,
+\[
+\mathrm{Var}(Y_i) = a(\phi)\, V(\mu_i),
+\quad
+V(\mu_i) = b''(\theta(\mu_i)).
+\]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcccc}
+\hline
+Distribution
+& $y$
+& $\theta$
+& $b(\theta)$
+& $a(\phi)$
+\\
+\hline
+Normal $(\mu,\sigma^2)$
+& $y\in\mathbb{R}$
+& $\mu$
+& $\dfrac{\theta^2}{2}$
+& $\sigma^2$
+\\[6pt]
+
+Poisson $(\lambda)$
+& $y\in\{0,1,2,\dots\}$
+& $\log\lambda$
+& $e^{\theta}$
+& $1$
+\\[6pt]
+
+Binomial $(n,p)$
+& $y\in\{0,\dots,n\}$
+& $\log\!\left(\dfrac{p}{1-p}\right)$
+& $n\log(1+e^{\theta})$
+& $1$
+\\[6pt]
+
+Bernoulli $(p)$
+& $y\in\{0,1\}$
+& $\log\!\left(\dfrac{p}{1-p}\right)$
+& $\log(1+e^{\theta})$
+& $1$
+\\[6pt]
+
+Gamma $(\mu,\phi)$
+& $y>0$
+& $-\dfrac{1}{\mu}$
+& $-\log(-\theta)$
+& $\phi$
+\\[6pt]
+
+Inverse Gaussian $(\mu,\phi)$
+& $y>0$
+& $-\dfrac{1}{2\mu^2}$
+& $-\sqrt{-2\theta}$
+& $\phi$
+\\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Example}
+
+For the Gamma GLM, Gamma is conventionally parameterized as
+\[
+Y_i \sim \mathrm{Gamma}\left(\frac{1}{\phi},\frac{1}{\phi\mu_i}\right),
+\]
+where
+\[
+\theta_i=-\frac{1}{\mu_i},\qquad
+b(\theta_i)=-\log(-\theta_i),\qquad
+a(\phi)=\phi,
+\]
+and
+\[
+c(y_i,\phi)
+=
+\left(\frac{1}{\phi}-1\right)\log y_i
+-\frac{\log\phi}{\phi}
+-\log\Gamma\left(\frac{1}{\phi}\right).
+\]
+
+\subsection{MLE $\theta$ for the Canonical Exponential Family}
+Consider independent observations $Y_1,\dots,Y_n$ with density
+\[
+f(y_i \mid \theta_i,\phi)
+=
+\exp\!\left(
+\frac{y_i \theta_i - b(\theta_i)}{a(\phi)}
++ c(y_i,\phi)
+\right),
+\]
+where $a(\phi)>0$ is known.
+\paragraph{Log-likelihood.}
+The log-likelihood (up to constants) is
+\[
+\ell(\theta)
+=
+\frac{1}{a(\phi)}
+\sum_{i=1}^n
+\left(
+y_i\theta_i - b(\theta_i)
+\right).
+\]
+\paragraph{Score function.}
+The score function with respect to $\theta_i$ is
+\[
+U(\theta_i)
+=
+\frac{\partial \ell}{\partial \theta_i}
+=
+\frac{1}{a(\phi)}
+\left(
+y_i - b'(\theta_i)
+\right).
+\]
+\paragraph{Likelihood equation.}
+The maximum likelihood estimator $\hat\theta_i$ satisfies
+\[
+b'(\hat\theta_i) = y_i,
+\]
+or equivalently,
+\[
+\hat\theta_i = (b')^{-1}(y_i),
+\]
+provided $b'(\theta)$ is invertible.
+\paragraph{Existence and uniqueness.}
+If $b(\theta)$ is strictly convex, then $b'(\theta)$ is strictly increasing,
+and the MLE $\hat\theta_i$ exists and is unique whenever
+$y_i$ lies in the interior of the mean parameter space.
+\paragraph{Observed information.}
+The observed Fisher information is
+\[
+-\frac{\partial^2 \ell}{\partial \theta_i^2}
+=
+\frac{1}{a(\phi)} b''(\theta_i).
+\]
+
+\paragraph{Fisher information.}
+The Fisher information for $\theta_i$ is
+\[
+\mathcal{I}(\theta_i)
+=
+\mathbb{E}\!\left[
+-\frac{\partial^2 \ell}{\partial \theta_i^2}
+\right]
+=
+\frac{1}{a(\phi)} b''(\theta_i).
+\]
+
+\paragraph{Asymptotic distribution.}
+Under standard regularity conditions,
+\[
+\sqrt{n}(\hat\theta - \theta)
+\xrightarrow{d}
+\mathcal{N}\!\left(
+0,\,
+\frac{a(\phi)}{b''(\theta)}
+\right).
+\]
+
+\paragraph{Invariance property.}
+Since $\mu = b'(\theta)$, the MLE of the mean parameter is
+\[
+\hat\mu = b'(\hat\theta).
+\]
+
+\paragraph{Efficiency.}
+The MLE $\hat\theta$ attains the Cram\'er--Rao lower bound:
+\[
+\mathrm{Var}(\hat\theta) \ge \frac{a(\phi)}{n\,b''(\theta)},
+\]
+with equality asymptotically.
+
+\paragraph{Newton update.}
+Newton's method updates $\theta_i$ by
+\[
+\theta_i^{(t+1)}
+=
+\theta_i^{(t)}
+-
+\left[
+\frac{\partial^2 \ell}{\partial \theta_i^2}
+\right]^{-1}
+\frac{\partial \ell}{\partial \theta_i}.
+\]
+Substituting the derivatives gives
+\[
+\boxed{
+\theta_i^{(t+1)}
+=
+\theta_i^{(t)}
++
+\frac{y_i - b'(\theta_i^{(t)})}{b''(\theta_i^{(t)})}
+}
+\]
+
+\paragraph{Interpretation.}
+The Newton step moves $\theta_i$ in proportion to
+\[
+\frac{\text{residual}}{\text{curvature}}
+=
+\frac{y_i - \mu_i^{(t)}}{\mathrm{Var}(Y_i)/a(\phi)},
+\quad
+\mu_i^{(t)} = b'(\theta_i^{(t)}).
+\]
+
+\paragraph{Convergence properties.}
+\begin{itemize}
+  \item If $b(\theta)$ is strictly convex, then $b''(\theta)>0$ and the update is well-defined.
+  \item The log-likelihood is concave in $\theta$, so Newton iterations converge to the unique MLE.
+  \item Convergence is quadratic in a neighborhood of $\hat\theta_i$.
+\end{itemize}
+
+\paragraph{Connection to Fisher scoring.}
+Since
+\[
+\mathcal{I}(\theta_i)
+=
+-\mathbb{E}\!\left[
+\frac{\partial^2 \ell}{\partial \theta_i^2}
+\right]
+=
+\frac{1}{a(\phi)} b''(\theta_i),
+\]
+Newton's method coincides with Fisher scoring for canonical exponential families.
+
+\paragraph{Special case (single observation).}
+For a single observation $y$,
+\[
+\theta^{(t+1)}
+=
+\theta^{(t)}
++
+\frac{y - b'(\theta^{(t)})}{b''(\theta^{(t)})},
+\]
+which converges to $\hat\theta = (b')^{-1}(y)$.
+
+\subsection{IRLS with Mean $\mu_i$ and Link Function $g(\mu_i)$}
+
+Let $Y_1,\dots,Y_n$ be independent with density
+\[
+f(y_i \mid \theta_i,\phi)
+=
+\exp\!\left(
+\frac{y_i \theta_i - b(\theta_i)}{a(\phi)}
++ c(y_i,\phi)
+\right),
+\]
+where
+\[
+\mu_i = \mathbb{E}[Y_i] = b'(\theta_i),
+\qquad
+\mathrm{Var}(Y_i) = a(\phi)\, b''(\theta_i).
+\]
+
+\paragraph{Link function.}
+A generalized linear model assumes
+\[
+\eta_i = g(\mu_i) = x_i^\top \beta,
+\]
+where $g(\cdot)$ is a monotone link function.
+
+\paragraph{Log-likelihood.}
+Up to constants, the log-likelihood is
+\[
+\ell(\beta)
+=
+\frac{1}{a(\phi)}
+\sum_{i=1}^n
+\left(
+y_i \theta_i - b(\theta_i)
+\right),
+\quad
+\theta_i = \theta(\mu_i).
+\]
+
+\paragraph{Score function.}
+Using the chain rule,
+\[
+\frac{\partial \ell}{\partial \beta}
+=
+\sum_{i=1}^n
+\frac{\partial \ell}{\partial \mu_i}
+\frac{\partial \mu_i}{\partial \eta_i}
+\frac{\partial \eta_i}{\partial \beta}.
+\]
+Since
+\[
+\frac{\partial \ell}{\partial \mu_i}
+=
+\frac{y_i - \mu_i}{a(\phi)\, b''(\theta_i)},
+\qquad
+\frac{\partial \eta_i}{\partial \beta} = x_i,
+\]
+we obtain
+\[
+\nabla_\beta \ell(\beta)=
+\frac{1}{a(\phi)}
+\sum_{i=1}^n
+\frac{y_i - b^{\prime}(\theta_i)}{b''(\theta_i)}
+\frac{1}{g^\prime(\mu_i)}
+x_i=
+\frac{1}{a(\phi)}
+\sum_{i=1}^n
+\frac{y_i - \mu_i}{V(\mu_i)}
+\frac{1}{g^\prime(\mu_i)}
+x_i =
+\frac{1}{a(\phi)}
+\sum_{i=1}^n
+\frac{y_i - \mu_i}{\text{Var}(\mu_i)}
+\frac{1}{g^\prime(\mu_i)}
+x_i
+\]
+
+\paragraph{Variance function.}
+Define the variance function
+\[
+V(\mu_i) = b''(\theta_i),
+\quad
+\mathrm{Var}(Y_i) = a(\phi)\,V(\mu_i).
+\]
+
+\paragraph{Working weights.}
+Define the weights
+\[
+w_i
+=
+\frac{1}{a(\phi)}
+\left(\frac{d\mu_i}{d\eta_i}\right)^2
+\frac{1}{V(\mu_i)} = \frac{1}{g^\prime(\mu_i)^2\text{Var}(Y_i)}\frac{1}{a(\phi)}
+\]
+
+\paragraph{Observed Hessian.}
+Differentiating again gives the Hessian matrix
+\[
+\frac{\partial^2 l}{\partial \beta_k \partial \beta_j} = \frac{1}{a(\phi)}
+\frac{\partial\sum_{i=1}^n
+(y_i - \mu_i)
+\frac{1}{g^\prime(\mu_i)V(\mu_i)}x_{ik}}{\partial\beta_j} 
+\]
+\[
+= \frac{1}{a(\phi)}
+\sum_{i=1}^n\frac{\partial (y_i - \mu_i)}{\partial\beta_j}
+\frac{1}{g^\prime(\mu_i)V(\mu_i)} + (y_i - \mu_i)
+\frac{\partial\frac{1}{g^\prime(\mu_i)V(\mu_i)}}{\partial\beta_j}x_{ik}
+\]
+\[
+=\{\frac{1}{a(\phi)}\sum_{i=1}^n-\frac{\partial\mu_i}{\partial\eta_i}\frac{\partial\eta_i}{\partial\beta_i}\frac{1}{g^\prime(\mu_i)V(\mu_i)}-(y_i-\mu_i)(\frac{\partial\mu_i}{\partial\eta_i}\frac{\partial\eta_i}{\partial\beta_i}\frac{V^\prime(\mu_i)g^\prime(\mu_i) + V(\mu_i)g^{\prime\prime}(\mu_i)}{(V(\mu_i)g^{\prime}(\mu_i))^2})\}x_{ik}
+\]
+so with
+\[
+\frac{\partial\mu_i}{\partial\eta_j}=\frac{1}{g^\prime(\mu_i)}, \frac{\partial\eta_i}{\partial\beta_j}=x_{ij}
+\]
+we have it as 
+\[
+=\frac{1}{a(\phi)}\sum_{i=1}^n\{-\frac{1}{g^\prime(\mu_i)^2V(\mu_i)}-(y_i-\mu_i)(\frac{1}{g^\prime(\mu_i)}\frac{V^\prime(\mu_i)g^\prime(\mu_i) + V(\mu_i)g^{\prime\prime}(\mu_i)}{(V(\mu_i)g^{\prime}(\mu_i))^2})\}x_{ik}x_{ij}
+\]
+\paragraph{Matrix form.}
+Define
+\[
+W_i^{\text{obs}}
+=
+\frac{1}{a(\phi)}
+\left[
+\frac{1}{V(\mu_i)}
+\left(\frac{d\mu_i}{d\eta_i}\right)^2
+-
+(y_i-\mu_i)
+\frac{d}{d\mu_i}
+\left(
+\frac{1}{V(\mu_i)}
+\frac{d\mu_i}{d\eta_i}
+\right)
+\frac{d\mu_i}{d\eta_i}
+\right],
+\]
+and let
+\[
+W^{\text{obs}} = \mathrm{diag}(W_1^{\text{obs}},\dots,W_n^{\text{obs}}).
+\]
+Then
+\[
+\boxed{
+\nabla_\beta^2 \ell(\beta)
+=
+- X^\top W^{\text{obs}} X
+}
+\]
+\subsection{IRLS for $\beta$ estimation}
+\paragraph{Expected Hessian (Fisher information).}
+Taking expectation with respect to $Y_i$ removes the residual term:
+\[
+\mathbb{E}[y_i-\mu_i]=0.
+\]
+Hence the Fisher information matrix is
+\[
+\boxed{
+\mathcal{I}(\beta)
+=
+- \mathbb{E}[\nabla_\beta^2 \ell(\beta)]
+=
+X^\top W X
+}
+\]
+with
+\[
+\boxed{
+W_i
+=
+\frac{1}{a(\phi)}
+\frac{1}{V(\mu_i)}
+\left(\frac{d\mu_i}{d\eta_i}\right)^2
+}
+\]
+\paragraph{Hessian (expected).}
+The expected Hessian is
+\[
+\mathcal{I}(\beta)
+=
+X^\top W X,
+\quad
+W = \mathrm{diag}(w_1,\dots,w_n).
+\]
+\paragraph{Newton / Fisher scoring update.}
+The Fisher scoring step is
+\[
+\beta^{(t+1)}
+=
+\beta^{(t)}
++
+\left(X^\top W^{(t)} X\right)^{-1}
+X^\top W^{(t)} (y - \mu^{(t)}),
+\]
+where all quantities are evaluated at $\beta^{(t)}$.
+
+\paragraph{Working response.}
+Define the working response
+\[
+z_i^{(t)}
+=
+\eta_i^{(t)}
++
+(y_i - \mu_i^{(t)})
+\left(\frac{d\eta_i}{d\mu_i}\right)_{\mu_i^{(t)}}.
+\]
+
+\paragraph{Weighted least squares form.}
+Then $\beta^{(t+1)}$ solves
+\[
+\beta^{(t+1)}
+=
+\arg\min_{\beta}
+\sum_{i=1}^n
+w_i^{(t)}
+\left(z_i^{(t)} - x_i^\top \beta\right)^2.
+\]
+
+\paragraph{IRLS algorithm.}
+\begin{enumerate}
+  \item Initialize $\beta^{(0)}$.
+  \item At iteration $t$, compute
+  \[
+  \eta_i^{(t)} = x_i^\top \beta^{(t)}, \quad
+  \mu_i^{(t)} = g^{-1}(\eta_i^{(t)}).
+  \]
+  \item Compute
+  \[
+  w_i^{(t)}
+  =
+  \frac{1}{a(\phi)}
+  \left(\frac{d\mu_i}{d\eta_i}\right)^2
+  \frac{1}{V(\mu_i)}.
+  \]
+  \item Form
+  \[
+  z_i^{(t)}
+  =
+  \eta_i^{(t)}
+  +
+  (y_i - \mu_i^{(t)})
+  \left(\frac{d\eta_i}{d\mu_i}\right).
+  \]
+  \item Update
+  \[
+  \beta^{(t+1)}
+  =
+  \left(X^\top W^{(t)} X\right)^{-1}
+  X^\top W^{(t)} z^{(t)}.
+  \]
+\end{enumerate}
+
+\paragraph{Canonical link simplification.}
+If $g(\mu)=\theta$, then
+\[
+\frac{d\mu}{d\eta} = V(\mu),
+\quad
+w_i = \frac{V(\mu_i)}{a(\phi)},
+\]
+and IRLS reduces to Newton's method exactly.
+\subsection{Derivation of the IRLS Update via Taylor Expansion}
+
+Assume a generalized linear model with
+\[
+\eta_i = g(\mu_i) = x_i^\top \beta,
+\qquad
+\mathrm{Var}(Y_i) = a(\phi)\,V(\mu_i),
+\qquad
+\mu_i = \mathbb{E}[Y_i].
+\]
+
+\paragraph{Score function.}
+The score for $\beta$ is
+\[
+U(\beta)
+=
+\nabla_\beta \ell(\beta)
+=
+\sum_{i=1}^n
+\frac{y_i - \mu_i}{a(\phi)\,V(\mu_i)}
+\frac{d\mu_i}{d\eta_i}
+x_i.
+\]
+
+\paragraph{First-order Taylor expansion of $\mu_i$.}
+Expand $\mu_i(\beta)$ around the current iterate $\beta^{(t)}$:
+\[
+\mu_i(\beta)
+\approx
+\mu_i^{(t)}
++
+\left.
+\frac{d\mu_i}{d\eta_i}
+\right|_{\beta^{(t)}}
+x_i^\top (\beta - \beta^{(t)}).
+\]
+
+\paragraph{Linearization of the score.}
+Substitute the expansion into the score equation $U(\beta)=0$:
+\[
+0
+\approx
+\sum_{i=1}^n
+\frac{1}{a(\phi)\,V(\mu_i^{(t)})}
+\frac{d\mu_i}{d\eta_i}
+\left[
+y_i
+-
+\mu_i^{(t)}
+-
+\frac{d\mu_i}{d\eta_i}
+x_i^\top (\beta - \beta^{(t)})
+\right]
+x_i.
+\]
+
+\paragraph{Rearranging terms.}
+Split the sum:
+\[
+\sum_{i=1}^n
+\frac{y_i-\mu_i^{(t)}}{a(\phi)\,V(\mu_i^{(t)})}
+\frac{d\mu_i}{d\eta_i}
+x_i
+=
+\sum_{i=1}^n
+\frac{1}{a(\phi)}
+\frac{1}{V(\mu_i^{(t)})}
+\left(\frac{d\mu_i}{d\eta_i}\right)^2
+x_i x_i^\top
+(\beta-\beta^{(t)}).
+\]
+
+\paragraph{Matrix form.}
+Define the weights
+\[
+w_i^{(t)}
+=
+\frac{1}{a(\phi)}
+\frac{1}{V(\mu_i^{(t)})}
+\left(\frac{d\mu_i}{d\eta_i}\right)^2,
+\qquad
+W^{(t)} = \mathrm{diag}(w_1^{(t)},\dots,w_n^{(t)}).
+\]
+Then
+\[
+X^\top W^{(t)} X
+(\beta-\beta^{(t)})
+=
+X^\top W^{(t)}
+\left[
+\eta^{(t)}
++
+(y-\mu^{(t)})
+\left(\frac{d\eta}{d\mu}\right)
+-
+X\beta^{(t)}
+\right].
+\]
+
+\paragraph{Working response.}
+Define the working response
+\[
+z_i^{(t)}
+=
+\eta_i^{(t)}
++
+(y_i-\mu_i^{(t)})
+\left(\frac{d\eta_i}{d\mu_i}\right).
+\]
+
+\paragraph{Normal equations.}
+The update satisfies
+\[
+X^\top W^{(t)} X\,\beta^{(t+1)}
+=
+X^\top W^{(t)} z^{(t)}.
+\]
+
+\paragraph{IRLS update.}
+Thus
+\[
+\boxed{
+\beta^{(t+1)}
+=
+\left(X^\top W^{(t)} X\right)^{-1}
+X^\top W^{(t)} z^{(t)}
+}
+\]
+
+\paragraph{Canonical link simplification.}
+If $g(\mu)=\theta$, then
+\[
+\frac{d\mu}{d\eta}=V(\mu),
+\qquad
+w_i^{(t)}=\frac{V(\mu_i^{(t)})}{a(\phi)},
+\qquad
+z_i^{(t)}=\eta_i^{(t)}+\frac{y_i-\mu_i^{(t)}}{V(\mu_i^{(t)})}.
+\]
+\subsection{Initial Values for IRLS}
+Consider the model with only the intercept, then estimate $\beta_0$ with $\hat\beta_0$, set initial value as
+$$
+(0,0,\dots,\hat\beta_0)
+$$
+Example for Poisson GLM:
+
+\textbf{Step 1: Likelihood}
+
+Assume
+\[
+Y_i \sim \text{Poisson}(\mu_i), \qquad \log(\mu_i) = \beta_0.
+\]
+The Poisson density is
+\[
+P(Y_i=y_i) = \frac{\mu_i^{y_i} e^{-\mu_i}}{y_i!}.
+\]
+The log-likelihood for $n$ independent observations is
+\[
+l(\beta_0)
+=
+\sum_{i=1}^{n}
+\left[
+y_i \log(\mu_i) - \mu_i - \log(y_i!)
+\right].
+\]
+Since $\mu_i = e^{\beta_0}$ and $\log(\mu_i)=\beta_0$,
+\[
+l(\beta_0)
+=
+\sum_{i=1}^{n}
+\left[
+y_i \beta_0 - e^{\beta_0} - \log(y_i!)
+\right].
+\]
+
+
+\textbf{Step 2: Score Equation}
+
+Differentiate the log-likelihood:
+\[
+\frac{\partial l(\beta_0)}{\partial \beta_0}
+=
+\sum_{i=1}^{n}
+\left(
+y_i - e^{\beta_0}
+\right).
+\]
+Set the score equation equal to zero:
+\[
+\sum_{i=1}^{n} y_i - n e^{\beta_0} = 0.
+\]
+
+
+\textbf{Step 3: Maximum Likelihood Estimator}
+
+Solving for $\beta_0$,
+\[
+e^{\hat{\beta}_0}
+=
+\frac{1}{n}\sum_{i=1}^{n} y_i
+=
+\bar{y}.
+\]
+Therefore
+\[
+\hat{\beta}_0
+=
+\log(\bar{y}).
+\]
+\textbf{Step 4: Update}
+\[
+\mu^{(0)} =
+\bar y 
+\quad \text{or} \quad
+\frac{\bar y + y}{2}.
+\]
+Let
+\[
+\eta^{(0)} = X\beta^{(0)} + \text{offset}.
+\]
+
+Define the working response
+\[
+z
+=
+\eta^{(0)} - \text{offset}
++
+\Delta\bigl(y-\mu^{(0)}\bigr),
+\]
+where
+\[
+\Delta = \frac{d\eta}{d\mu}.
+\]
+For the Poisson log-link,
+\[
+\eta = \log(\mu),
+\qquad
+\Delta = \frac{1}{\mu}.
+\]
+The weight matrix is
+\[
+W_0 = \operatorname{diag}(\mu^{(0)}).
+\]
+The first IRLS update is then
+\[
+\beta^{(1)}
+\leftarrow
+\left(X^\top W_0 X\right)^{-1}
+X^\top W_0 z .
+\]
+\subsection{Equivalence of IRLS forms}
+Using the working response
+\[
+z^{(t)}
+=
+\eta^{(t)}
++
+\left.\frac{d\eta}{d\mu}\right|_{\mu^{(t)}}
+\left(y-\mu^{(t)}\right),
+\qquad
+\eta^{(t)}=X\beta^{(t)},
+\]
+we have
+\[
+\begin{aligned}
+\beta^{(t+1)}
+&=
+\left(X^\top W^{(t)}X\right)^{-1}
+X^\top W^{(t)}z^{(t)}\\
+&=
+\left(X^\top W^{(t)}X\right)^{-1}
+X^\top W^{(t)}
+\left[
+X\beta^{(t)}
++
+D^{(t)}(y-\mu^{(t)})
+\right]\\
+&=
+\beta^{(t)}
++
+\left(X^\top W^{(t)}X\right)^{-1}
+X^\top W^{(t)}D^{(t)}
+(y-\mu^{(t)}),
+\end{aligned}
+\]
+where
+\[
+D^{(t)}
+=
+\operatorname{diag}\left(
+\left.\frac{d\eta_i}{d\mu_i}\right|_{\mu_i^{(t)}}
+\right).
+\]
+Therefore,
+\[
+\beta^{(t+1)}
+=
+\beta^{(t)}
++
+\left(X^\top W^{(t)}X\right)^{-1}
+X^\top W^{(t)}(y-\mu^{(t)})
+\]
+holds only when \(D^{(t)}=I\), such as under the identity link, or when
+\(D^{(t)}\) is absorbed into the definition of the weight matrix.
+\newpage
+\section{Residual Test}
+\paragraph{Hat Matrix}
+Consider the linear regression model
+\[
+Y = X\beta + \varepsilon, \qquad \varepsilon \sim (0,\sigma^2 I_n).
+\]
+The fitted values are
+\[
+\hat{Y} = X\hat{\beta},
+\qquad 
+\hat{\beta} = (X^\top X)^{-1}X^\top Y .
+\]
+Define the \emph{hat matrix}
+\[
+H = X (X^\top X)^{-1} X^\top .
+\]
+Then
+\[
+\hat{Y} = HY .
+\]
+The diagonal element $h_{ii}$ of $H$ is called the \emph{leverage} of observation $i$.
+$$
+\operatorname{Var}(e)=\sigma^2(I-H)
+$$
+\paragraph{Ordinary Residual}
+The residual for observation $i$ is
+\[
+e_i = y_i - \hat{\mu}_i ,
+\]
+where
+\[
+\hat{\mu}_i = x_i^\top \hat{\beta}.
+\]
+\paragraph{Standardized Residual}
+Let $\hat{\gamma}$ be an estimator of $\sigma$ (often $\hat{\sigma}$).  
+The standardized residual is
+\[
+r_i =
+\frac{y_i - \hat{\mu}_i}{\hat{\gamma}}.
+\]
+\[
+\operatorname{Var}(e_i) = \sigma^2 (1 - h_{ii}).
+\]
+If $y_i\sim \operatorname{Poisson}(\mu_i)$. The standardized residual for observation $i$ is
+\[
+r_i
+=
+\frac{Y_i - \hat{\mu}_i}
+{\sqrt{\hat{\mu}_i}} .
+\]
+\paragraph{Pearson Goodness-of-Fit Statistic}
+Let $o_i$ denote the observed count and $e_i$ denote the expected count
+under the fitted model, for $i=1,\dots,n$.
+
+The Pearson goodness-of-fit statistic is
+\[
+X^2
+=
+\sum_{i=1}^n
+\frac{(o_i - e_i)^2}{e_i}
+\]
+Under correct model specification and for large $n$,
+\[
+X^2 \approx \chi^2_{n-p},
+\]
+where $p$ is the number of estimated parameters in the model.
+\[
+\boxed{
+X_P^2=\sum_j\frac{(O_j-E_j)^2}{E_j}
+}
+\]
+This form is used when the observations are \textbf{cell counts or category
+frequencies}, such as:
+\begin{itemize}
+    \item multinomial goodness-of-fit tests;
+    \item contingency tables;
+    \item Poisson count models.
+\end{itemize}
+
+For independent Poisson cell counts,
+\[
+O_j\sim\operatorname{Poisson}(E_j),
+\]
+so that
+\[
+E(O_j)=E_j,
+\qquad
+\operatorname{Var}(O_j)=E_j.
+\]
+Therefore,
+\[
+\frac{(O_j-E_j)^2}{E_j}
+=
+\frac{\left(O_j-E(O_j)\right)^2}
+{\operatorname{Var}(O_j)},
+\]
+and hence
+\[
+X_P^2
+=
+\sum_j
+\frac{\left(O_j-E(O_j)\right)^2}
+{\operatorname{Var}(O_j)}.
+\]
+For multinomial or contingency-table data, the cell counts are not independent
+because their total is fixed. However, a multinomial distribution can be obtained
+by conditioning independent Poisson counts on their total. Therefore, the same
+Pearson statistic is used.
+
+For example, if
+\[
+Y\sim\operatorname{Binomial}(n,\pi),
+\]
+the two cell counts are
+\[
+O_1=Y,
+\qquad
+O_2=n-Y,
+\]
+with expected counts
+\[
+E_1=n\pi,
+\qquad
+E_2=n(1-\pi).
+\]
+Then
+\[
+\begin{aligned}
+X_P^2
+&=
+\frac{(Y-n\pi)^2}{n\pi}
++
+\frac{\left[(n-Y)-n(1-\pi)\right]^2}{n(1-\pi)}
+\\
+&=
+\frac{(Y-n\pi)^2}{n\pi(1-\pi)}
+\\
+&=
+\frac{\left(Y-E(Y)\right)^2}{\operatorname{Var}(Y)}.
+\end{aligned}
+\]
+Thus,
+\[
+\boxed{
+\begin{aligned}
+\sum_i\frac{(Y_i-\mu_i)^2}{\operatorname{Var}(Y_i)}
+&\quad\text{is used for general model responses,}\\
+\sum_j\frac{(O_j-E_j)^2}{E_j}
+&\quad\text{is used for cell-count or frequency data.}
+\end{aligned}
+}
+\]
+The denominator \(E_j\) is appropriate because cell counts are modeled directly
+as Poisson counts, or as multinomial counts obtained by conditioning Poisson
+counts on a fixed total.
+
+\textbf{The connection between fixed total Poisson and Multinomial model will be provided in 2.3}
+\subsection{Testing Nested Models in GLMs}
+Let $M_0$ denote the model under the null hypothesis and $M_1$ the model under the alternative hypothesis, where $M_0$ is nested within $M_1$.
+
+The procedure for testing nested models in a generalized linear model (GLM) is:
+\begin{enumerate}
+    \item Specify the null model $M_0$ and the alternative model $M_1$.
+    \item Compute the goodness-of-fit statistics $G_0$ for $M_0$ and $G_1$ for $M_1$.
+    \item Form a test statistic such as
+    \[
+    G_1 - G_0
+    \quad \text{or} \quad
+    \frac{G_1}{G_0}.
+    \]
+    \item Reject the null hypothesis based on the distribution of the chosen test statistic.
+\end{enumerate}
+In GLMs, the difference in deviances between nested models is commonly used and asymptotically follows a $\chi^2$ distribution.
+
+The \textbf{Akaike Information Criterion (AIC)} is defined as
+\[
+AIC = -2\ell + 2p,
+\]
+where $\ell$ is the maximized log-likelihood and $p$ is the number of parameters.
+
+The \textbf{Bayesian Information Criterion (BIC)} is defined as
+\[
+BIC = -2\ell + p\log(n),
+\]
+where $n$ is the sample size.
+
+Models with smaller AIC or BIC values are preferred.
+
+\paragraph{Scaled Deviance}
+Let \(Y_1,\dots,Y_n\) be independent observations from an exponential
+family distribution with log-likelihood
+\[
+\ell(\boldsymbol{\mu};\mathbf{y})
+=
+\sum_{i=1}^n
+\frac{y_i\theta_i-b(\theta_i)}{\phi}
++
+\sum_{i=1}^n c(y_i,\phi),
+\]
+where \(\theta_i\) is the canonical parameter corresponding to the mean
+\(\mu_i\), and \(\phi\) is the dispersion parameter.
+
+The scaled deviance is defined as
+\[
+D(\mathbf{y};\boldsymbol{\mu})
+=
+2\left[
+\ell(\widehat{\boldsymbol{\mu}}^{\mathrm{sat}};\mathbf{y})
+-
+\ell(\boldsymbol{\mu};\mathbf{y})
+\right],
+\]
+where
+\begin{itemize}
+    \item \(\ell(\boldsymbol{\mu};\mathbf{y})\) is the log-likelihood
+    evaluated at the fitted mean vector
+    \(\boldsymbol{\mu}=(\mu_1,\dots,\mu_n)\);
+    \item \(\widehat{\boldsymbol{\mu}}^{\mathrm{sat}}\) is the fitted mean
+    vector under the saturated model, which \textbf{assigns a separate mean
+    parameter to every observation}. When allowed by the mean parameter
+    space, this gives
+    \[
+    \widehat{\mu}_i^{\mathrm{sat}}=y_i.
+    \]
+\end{itemize}
+
+Thus, the deviance measures twice the difference between the log-likelihood
+of the saturated model and that of the fitted model. It quantifies the loss
+of fit resulting from imposing the structure of the fitted GLM rather than
+allowing each observation to have its own mean parameter.
+
+\subsection{Residual test examples}
+
+\textbf{Pearson residual (Poisson case):}
+\[
+r_i =
+\frac{y_i - \hat{\mu}_i}{\sqrt{\hat{\mu}_i}}
+\]
+\textbf{Pearson residual (Gamma case):}
+\[
+r_i =
+\frac{y_i - \hat{\mu}_i}{\hat{\mu}_i}
+\]
+Under the model assumptions,
+\[
+\sum_{i=1}^n r_i^2 \sim \chi^2_{n-p}.
+\]
+\textbf{Deviance:}
+\[
+D(y,\hat{\mu}) =
+\sum_{i=1}^n
+2\phi
+\left[
+\ell(y_i;y_i) - \ell(\hat{\mu}_i;y_i)
+\right].
+\]
+
+\textbf{Deviance residual:}
+\[
+r_i^d =
+\operatorname{sign}(y_i-\hat{\mu}_i)
+\sqrt{d_i},
+\]
+where $d_i$ is the individual contribution to the deviance.
+
+The scaled deviance satisfies
+\[
+\frac{D(y,\hat{\mu})}{\phi} \sim \chi^2_{n-p}.
+\]
+\textbf{Null Deviance.}
+
+The \emph{null deviance} is obtained by fitting the \textbf{null model}, which contains only an intercept (no covariates).  
+It is computed by comparing the saturated model with this intercept-only model.
+\paragraph{Likelihood Ratio Test for Nested GLMs}
+Let $M_0 \subset M_1$ be two nested GLMs with $p_0 < p_1$ parameters.  
+Let $D(y,\hat{\mu}_0)$ and $D(y,\hat{\mu}_1)$ denote the deviances under $M_0$ and $M_1$.
+
+The likelihood ratio test statistic is
+\[
+G
+=
+\frac{D(y,\hat{\mu}_0)-D(y,\hat{\mu}_1)}{\phi} = 2(\ell(y,\hat\mu_{full}) - \ell(y,\hat\mu_{reduced}))\sim \chi^2_{p.full-p.reduced}
+\]
+$\phi$ can be estimated from the full model
+
+\paragraph{Example: Poisson Regression}
+Assume the number of deaths $Y$ follows a Poisson distribution
+\[
+f(y;\mu)=\frac{\mu^y e^{-\mu}}{y!}.
+\]
+
+The expected number of deaths depends on the population size $M$ and a mortality rate that depends on covariates $x$. Thus we model
+\[
+E(Y) = \mu = M \mathcal{X}(x^\prime \beta),
+\]
+where $\mathcal{X}(x^\prime \beta)$ represents the mortality rate.
+
+A common specification (Dobson) is
+\[
+E(Y) = \mu = M e^{x^\prime \beta}.
+\]
+
+Using the log link,
+\[
+g(\mu_i) = \log(\mu_i) = \log(M_i) + x_i^\prime \beta,
+\]
+where $\log(M_i)$ acts as an offset.
+
+Detail at textbook 9.2, P198
+$$
+E\left(Y_i\right)=\mu_i=n_i \theta_i
+$$
+$$
+\theta_i=e^{\mathbf{x}_i^T \boldsymbol{\beta}}
+$$
+The GLM model is
+$$
+E\left(Y_i\right)=\mu_i=n_i e^{\mathbf{x}_i^T \boldsymbol{\beta}} ; \quad Y_i \sim \operatorname{Po}\left(\mu_i\right)
+$$
+Link:
+$$
+\log \mu_i=\log n_i (\text{offset})+\mathbf{x}_i^T \boldsymbol{\beta}
+$$
+and we have rate ratio
+$$
+R R=\frac{\mathrm{E}\left(Y_i \mid \text { present }\right)}{\mathrm{E}\left(Y_i \mid \text { absent }\right)}=e^{\beta_j}
+$$
+All the other explanatory variables remain the same, for a continuous explanatory variable $x_k$, a one-unit increase will result in a multiplicative effect of $e^{\beta_k}$ on the rate $\mu$.
+
+For a binary explanatory variable denoted by an indictor variable, $x_j=0$ if the factor is absent and $x_j=1$ if it is present. 
+$$
+\frac{b_j-\beta_j}{\text { s.e. }\left(b_j\right)} \sim N(0,1)
+$$
+where $b_j=\hat\beta_j$ is the estimator. For Wald test, confidence intervals, score, LRT, etc.
+Fit 
+$$
+\widehat{Y}_i=\widehat{\mu}_i=n_i e^{\mathbf{x}_i^T \mathbf{b}}
+$$
+Also denoted as $e_i$ ($e_i = \hat Y_i$)
+
+Pearson residuals
+$$
+r_i=\frac{o_i-e_i}{\sqrt{e_i}} = \frac{Y_i-\hat Y_i}{\sqrt{\hat Y_i}}
+$$
+$o_i$ denotes the observed value of $Y_i$. The deviance is given by
+$$
+D=2 \sum\left[o_i \log \left(o_i / e_i\right)-\left(o_i-e_i\right)\right]
+$$
+However, for most models $\sum o_i=\sum e_i$, so the deviance simplifies to
+$$
+D=2 \sum\left[o_i \log \left(o_i / e_i\right)\right] .
+$$
+With Tarlor expansion
+$$
+o \log \left(\frac{o}{e}\right)=(o-e)+\frac{1}{2} \frac{(o-e)^2}{e}+\dots
+$$
+we have
+$$
+\begin{aligned}
+D & =2 \sum_{i=1}^N\left[\left(o_i-e_i\right)+\frac{1}{2} \frac{\left(o_i-e_i\right)^2}{e_i}-\left(o_i-e_i\right)\right] \\
+& =\sum_{i=1}^N \frac{\left(o_i-e_i\right)^2}{e_i}=X^2=\sum r_i^2.
+\end{aligned}
+$$
+Both $D$ and $X^2$ follows $\chi^2_{N-p}$. where \(N\) is the number of independent observations and \(p\) is the
+number of estimated regression parameters, including the intercept. The
+offset is known and is therefore not counted as an estimated parameter.
+
+Example 9.2.1, P201
+\subsection{Connection between fixed total Poisson and Multinomial model}
+
+\paragraph{Example: Multinomial Model}
+If the only constraint is that the sum of the $Y_i$ 's is $n$, then the following Multinomial distribution may be used
+$$
+f(\mathbf{y} ; \boldsymbol{\mu} \mid n)=n!\prod_{i=1}^N \theta_i^{y_i} / y_{i}!,
+$$
+where $\sum_{i=1}^N \theta_i=1$ and $\sum_{i=1}^N y_i=n$. In this case, $E\left(Y_i\right)=n \theta_i$.
+
+\paragraph{Example: Poisson Model with Different rate}
+Let $Y_1,\dots,Y_T$ be independent random variables such that
+\[
+Y_i \sim \text{Poisson}(\lambda_i), \qquad i=1,\dots,T .
+\]
+The probability mass function of $Y_i$ is
+\[
+P(Y_i=y_i)
+=
+\frac{e^{-\lambda_i}\lambda_i^{y_i}}{y_i!}.
+\]
+Given observations $y_1,\dots,y_T$, the likelihood function is
+\[
+L(\lambda_1,\dots,\lambda_T; y_1,\dots,y_T)
+=
+\prod_{i=1}^{T}
+\frac{e^{-\lambda_i}\lambda_i^{y_i}}{y_i!}.
+\]
+that
+$$
+\sum Y_i \sim \operatorname{Poisson} (\sum \lambda_i)
+$$
+The log-likelihood is
+\[
+\ell(\lambda_1,\dots,\lambda_T)
+=
+\sum_{i=1}^{T}
+\left(
+-\lambda_i + y_i\log\lambda_i - \log(y_i!)
+\right).
+\]
+\paragraph{Poisson and Multinomial Conversion}
+Let $Y_1,\dots,Y_T$ be independent random variables with
+\[
+Y_i \sim \operatorname{Poisson}(\lambda_i), \qquad i=1,\dots,T .
+\]
+Then
+\[
+S=\sum_{i=1}^T Y_i \sim \operatorname{Poisson}\!\left(\sum_{i=1}^T \lambda_i\right).
+\]
+Moreover, conditional on $S=s$,
+\[
+(Y_1,\dots,Y_T)\mid S=s
+\sim
+\operatorname{Multinomial}
+\left(s;\,
+\frac{\lambda_1}{\sum_{i=1}^T\lambda_i},
+\dots,
+\frac{\lambda_T}{\sum_{i=1}^T\lambda_i}
+\right).
+\]
+
+\begin{proof}
+Let $S=\sum_{i=1}^T Y_i$. Since the $Y_i$ are independent,
+\[
+P(Y_1=y_1,\dots,Y_T=y_T)
+=
+\prod_{i=1}^T
+\frac{e^{-\lambda_i}\lambda_i^{y_i}}{y_i!}.
+\]
+To compute the distribution of $S$, write
+\[
+P(S=s)
+=
+\sum_{\substack{y_1+\cdots+y_T=s \\ y_i\ge0}}
+P(Y_1=y_1,\dots,Y_T=y_T).
+\]
+Substituting the joint pmf gives
+\[
+P(S=s)
+=
+\sum_{y_1+\cdots+y_T=s}
+\prod_{i=1}^T
+\frac{e^{-\lambda_i}\lambda_i^{y_i}}{y_i!}.
+\]
+Factor out the terms not depending on $(y_1,\dots,y_T)$:
+\[
+P(S=s)
+=
+e^{-\sum_{i=1}^T\lambda_i}
+\sum_{y_1+\cdots+y_T=s}
+\prod_{i=1}^T
+\frac{\lambda_i^{y_i}}{y_i!}.
+\]
+Use the multinomial expansion
+\[
+(\lambda_1+\cdots+\lambda_T)^s
+=
+\sum_{y_1+\cdots+y_T=s}
+\frac{s!}{y_1!\cdots y_T!}
+\prod_{i=1}^T \lambda_i^{y_i}.
+\]
+Hence
+\[
+\sum_{y_1+\cdots+y_T=s}
+\prod_{i=1}^T
+\frac{\lambda_i^{y_i}}{y_i!}
+=
+\frac{(\sum_{i=1}^T\lambda_i)^s}{s!}.
+\]
+Therefore
+\[
+P(S=s)
+=
+e^{-\sum_{i=1}^T\lambda_i}
+\frac{(\sum_{i=1}^T\lambda_i)^s}{s!},
+\]
+which is the pmf of
+\[
+\operatorname{Poisson}\!\left(\sum_{i=1}^T\lambda_i\right).
+\]
+Now compute the conditional distribution. For $y_1+\cdots+y_T=s$,
+\[
+P(Y_1=y_1,\dots,Y_T=y_T\mid S=s)
+=
+\frac{P(Y_1=y_1,\dots,Y_T=y_T)}{P(S=s)}.
+\]
+Substituting the expressions above and simplifying gives
+\[
+P(Y_1=y_1,\dots,Y_T=y_T\mid S=s)
+=
+\frac{s!}{y_1!\cdots y_T!}
+\prod_{i=1}^T
+\left(
+\frac{\lambda_i}{\sum_{j=1}^T\lambda_j}
+\right)^{y_i}.
+\]
+This is the pmf of a multinomial distribution with parameters
+\[
+s
+\quad\text{and}\quad
+p_i=\frac{\lambda_i}{\sum_{j=1}^T\lambda_j}.
+\]
+\end{proof}
+Therefore, conditioning on $S=s$, since
+\[
+(Y_1,\dots,Y_T)\mid S=s
+\sim
+\operatorname{Multinomial}(s; p_1,\dots,p_T),
+\qquad
+p_i=\frac{\lambda_i}{\sum_{j=1}^T\lambda_j},
+\]
+we have
+\[
+E(Y_i\mid S=s)=sp_i,
+\]
+\[
+\operatorname{Var}(Y_i\mid S=s)=sp_i(1-p_i),
+\]
+and for $i\neq j$,
+\[
+\operatorname{Cov}(Y_i,Y_j\mid S=s)=-sp_ip_j.
+\]
+Log-linear model is often used for associations.
+
+Example 9.7.2 P215, 9.3.2 on P208
+
+7.2, 7.3, 7.4
+\newpage
+
+\section{Binomial Model GLM}
+\paragraph{Binomial GLM}
+Let $Y_1,\dots,Y_N$ be independent random variables such that
+\[
+Y_i \sim \operatorname{Binomial}(\mu_i,\pi_i), \qquad i=1,\dots,N,
+\]
+where $\mu_i$ is the number of trials and $\pi_i$ is the success probability.
+
+The generalized linear model specifies that the mean
+\[
+E(Y_i)=\mu_i\pi_i
+\]
+is linked to the covariates through
+\[
+g(\pi_i)=x_i^{\prime}\beta,
+\]
+where $g(\cdot)$ is the link function.
+
+The likelihood function is
+\[
+L(\pi;y)
+=
+\prod_{i=1}^{N}
+\binom{\mu_i}{y_i}
+\pi_i^{y_i}(1-\pi_i)^{\mu_i-y_i}.
+\]
+The log-likelihood is
+\[
+\ell(\pi;y)
+=
+\sum_{i=1}^{N}
+\left[
+y_i\log(\pi_i)
++
+(\mu_i-y_i)\log(1-\pi_i)
++
+\log\binom{\mu_i}{y_i}
+\right].
+\]
+The maximum likelihood estimator $\hat{\beta}$ maximizes $\ell(\pi;y)$ subject to
+\[
+g(\pi_i)=x_i^{\prime}\beta.
+\]
+Table 7.1
+\paragraph{Deviance for the Binomial GLM}
+Let $Y_1,\dots,Y_N$ be independent with
+\[
+Y_i \sim \operatorname{Binomial}(\mu_i,\pi_i),
+\qquad
+E(Y_i)=\mu_i\pi_i .
+\]
+Let $\hat{\pi}_i$ denote the fitted probabilities from the GLM and
+$\hat{\mu}_i=\mu_i\hat{\pi}_i$ the fitted means.
+
+The deviance is defined as
+\[
+D(y;\hat{\mu})
+=
+2\bigl[l(y;y)-l(\hat{\mu};y)\bigr].
+\]
+
+For the binomial model this becomes
+\[
+D(y;\hat{\mu})
+=
+2\sum_{i=1}^{N}
+\left[
+y_i\log\!\left(\frac{y_i}{\hat{\mu}_i}\right)
++
+(\mu_i-y_i)\log\!\left(
+\frac{\mu_i-y_i}{\mu_i-\hat{\mu}_i}
+\right)
+\right].
+\]
+That is
+\[
+D(y;\hat{\mu})
+=
+2\sum_{i=1}^{N}
+\left[
+y_i\log\!\left(\frac{y_i}{\hat{\mu}_i}\right)
+\right].
+\]
+that
+\[
+D = 2\sum o\log(o/e)
+\]
+that $o$ is the observation ($y_i$ or $y_i -\mu_i$), $e$ is the respective frequency (fitted values). $\widehat{y}_i=n_i \widehat{\pi}_i$ and $\left(n_i-\widehat{y}_i\right)=\left(n_i-n_i \widehat{\pi}_i\right)$
+that
+$$
+D\sim\chi^2_{N-p}
+$$
+Suppose model 1 with $p_1$ parameters and model 2 with $p_2$ parameters $p_1 < p_2$ that
+\[
+\Delta D = D_1 - D_2 \sim \chi^2_{p_2-p_1}
+\]
+This could be taken for examine if we prefer model 1 or 2. We can also use AIC
+
+(7.4 P158)
+
+(7.5, P162)
+\paragraph{Binomial GLM Goodness of fit}
+$$
+S_w=\sum_{i=1}^N \frac{\left(y_i-n_i \pi_i\right)^2}{n_i \pi_i\left(1-\pi_i\right)}
+$$
+since $E\left(Y_i\right)=n_i \pi_i$ and $\operatorname{Var}\left(Y_i\right)=n_i \pi_i\left(1-\pi_i\right)$.
+This is equivalent to minimizing the Pearson chi-squared statistic
+$$
+X^2=\sum \frac{(o-e)^2}{e},
+$$
+\begin{proof}
+    $$
+\begin{aligned}
+X^2 & =\sum_{i=1}^N \frac{\left(y_i-n_i \pi_i\right)^2}{n_i \pi_i}+\sum_{i=1}^N \frac{\left[\left(n_i-y_i\right)-n_i\left(1-\pi_i\right)\right]^2}{n_i\left(1-\pi_i\right)} \\
+& =\sum_{i=1}^N \frac{\left(y_i-n_i \pi_i\right)^2}{n_i \pi_i\left(1-\pi_i\right)}\left(1-\pi_i+\pi_i\right)=S_w .
+\end{aligned}
+$$
+\end{proof}
+$X^2$ is estimated at
+$$
+X^2=\sum_{i=1}^N \frac{\left(y_i-n_i \widehat{\pi}_i\right)^2}{n_i \widehat{\pi}_i\left(1-\widehat{\pi}_i\right)}
+$$
+which is asymptotically equivalent to the deviance
+with taylor expansion
+$$
+o\log(o/e) = (o-e) + \frac{1}{2}\frac{(o-e)^2}{e}+\dots
+$$
+that gives
+$$
+\begin{aligned}
+D = & 2 \sum_{i=1}^N\left\{\left(y_i-n_i \widehat{\pi}_i\right)+\frac{1}{2} \frac{\left(y_i-n_i \widehat{\pi}_i\right)^2}{n_i \widehat{\pi}_i}+\left[\left(n_i-y_i\right)-\left(n_i-n_i \widehat{\pi}_i\right)\right]\right. \\
+& \left.+\frac{1}{2} \frac{\left[\left(n_i-y_i\right)-\left(n_i-n_i \widehat{\pi}_i\right)\right]^2}{n_i-n_i \widehat{\pi}_i}+\ldots\right\} \\
+\cong & \sum_{i=1}^N \frac{\left(y_i-n_i \widehat{\pi}_i\right)^2}{n_i \widehat{\pi}_i\left(1-\widehat{\pi}_i\right)}=X^2 
+\end{aligned}
+$$
+Another goodness of fit testing is 
+$$
+C=2[l(\widehat{\boldsymbol{\pi}} ; \mathbf{y})-l(\widetilde{\boldsymbol{\pi}} ; \mathbf{y})]
+$$
+for test statistics, where $l$ is the log-likelihood function
+$$
+C=2 \sum\left[y_i \log \left(\frac{\widehat{y}_i}{n_i \widetilde{\pi}_i}\right)+\left(n_i-y_i\right) \log \left(\frac{n_i-\widehat{y}_i}{n_i-n_i \widetilde{\pi}_i}\right)\right]
+$$
+Under the minimal model $\widetilde{\pi}=\left(\Sigma y_i\right) /\left(\Sigma n_i\right)$. Let $\widehat{\pi}_i$ denote the estimated probability for $Y_i$ under the model of interest (so the fitted value is $\left.\widehat{y}_i=n_i \widehat{\pi}_i\right)$.
+
+This tests if all $\beta$ entries are 0 or at least one of them is non-zero. the approximate sampling distribution for $C$ is $\chi^2_{p-1}$ if all the $p$ parameters except the intercept term are zero
+
+(7.6 P166)
+
+The Pearson, or chi-squared, residual is
+$$
+X_k=\frac{\left(y_k-n_k \widehat{\pi}_k\right)}{\sqrt{n_k \widehat{\pi}_k\left(1-\widehat{\pi}_k\right)}} \quad, k=1, \ldots, m .
+$$
+Deviance residuals can be defined similarly,
+$$
+d_k=\operatorname{sign}\left(y_k-n_k \widehat{\pi}_k\right)\left\{2\left[y_k \log \left(\frac{y_k}{n_k \widehat{\pi}_k}\right)+\left(n_k-y_k\right) \log \left(\frac{n_k-y_k}{n_k-n_k \widehat{\pi}_k}\right)\right]\right\}^{1 / 2}
+$$
+Both provides diagnotic information
+\begin{itemize}
+    \item Residuals vs each explanatory variable (check for linearity)
+    \item Plotted in the order of the measurements (check for serial correlation)
+    \item Normal probability plots (Assume standardized residual should have approximately normal)
+\end{itemize}
+\paragraph{Example: Does response model}
+We have the $y_i$ as the success out of $n_i$ trials, with the proportion of success as $p_i = y_i/n_i$. We have $E(p_i) = \pi_i$ and model $g(\pi_i)=x_i^\prime\beta$ as the link function
+\[
+f(y;\pi)
+=
+\binom{n}{np}
+\pi^{np}(1-\pi)^{n-np} = 
+\exp\!\left\{
+\frac{p\log\frac{\pi}{1-\pi}
++
+\log(1-\pi)}{1/n}+ \log\binom{n}{np}
+\right\}.
+\]
+with $\theta = \log(\pi/(1-\pi))$, it becomes
+\[
+f(p;\pi)
+=
+\binom{n}{np}
+\exp\!\left\{
+np\,\theta
+-
+n\log(1+e^{\theta})
+\right\},
+\]
+\[
+\log f(p;\pi)
+=
+\log\binom{n}{np}
++
+\frac{p\,\theta
+-
+\log(1+e^{\theta})}{1/n}
+\]
+We have
+$$
+\pi = \frac{e^\theta}{1+e^\theta} = E(p)
+$$
+and
+$$
+\operatorname{Var}(p_i)
+=
+\frac{a(\phi)}{n}
+\frac{e^{\theta_i}}{(1+e^{\theta_i})^2}.
+$$
+with the link function
+\[
+g(\pi_i) = \eta_i = \beta_1 + \beta_2x_i
+\]
+\subsection{IRLS for Binomial GLM}
+Let $Y_i \sim \text{Binomial}(n_i,\pi_i)$ and define the observed
+proportions
+\[
+p_i=\frac{y_i}{n_i}, \qquad
+p=(p_1,\dots,p_n)^\prime .
+\]
+
+Assume the GLM
+\[
+g(\pi_i)=x_i^\prime \beta, \qquad
+\eta = X\beta .
+\]
+
+The MLE of $\beta$ can be obtained using the
+\textbf{Iteratively Reweighted Least Squares (IRLS)} algorithm.
+At iteration $m$ we solve the weighted least squares equation
+\[
+(X^\prime W X)^{(m-1)} b^{(m)} = X^\prime W z .
+\]
+The components are defined as follows.
+
+\textbf{Weight matrix}
+\[
+W
+=
+\operatorname{diag}\!\left(
+\frac{1}{\operatorname{Var}(p_i)\,[g'(\pi_i)]^2}
+\right)
+=
+\operatorname{diag}\!\left(
+\frac{n_i}{\pi_i(1-\pi_i)\,[g'(\pi_i)]^2}
+\right).
+\]
+
+\textbf{Adjusted response}
+\[
+z
+=
+X b^{(m-1)}
++
+\Delta (p-\pi)
+=
+\eta + \Delta (p-\pi),
+\]
+evaluated at $\beta=b^{(m-1)}$.
+
+\textbf{Derivative matrix}
+\[
+\Delta = \operatorname{diag}\!\left(g'(\pi_i)\right).
+\]
+
+\textbf{Initial estimate}
+\[
+\hat b^{(0)} = (X^\prime X)^{-1}X^\prime y .
+\]
+
+The procedure iterates until convergence of $b^{(m)}$.
+
+\subsection*{Example: IRLS for Binomial GLM}
+Let
+\[
+Y_i \sim \text{Binomial}(n_i,\pi_i), 
+\qquad 
+p_i=\frac{y_i}{n_i},
+\qquad 
+p=(p_1,\dots,p_n)' .
+\]
+
+Assume
+\[
+\eta_i = \beta_1 + \beta_2 x_i,
+\qquad 
+\pi_i = \phi(\eta_i).
+\]
+
+The MLE of $\beta=(\beta_1,\beta_2)'$ can be obtained by the
+\textbf{Iteratively Reweighted Least Squares (IRLS)} algorithm.
+At iteration $m$ we solve
+\[
+(X^\prime W X)^{(m-1)} b^{(m)} = X^\prime W z .
+\]
+\textbf{Weight matrix}
+\[
+W
+=
+\operatorname{diag}\!\left(
+\frac{1}{\operatorname{Var}(p_i)\,[\phi'(\eta_i)]^2}
+\right)
+=
+\operatorname{diag}\!\left(
+\frac{n_i[\phi'(\eta_i)]^2}{\pi_i(1-\pi_i)}
+\right).
+\]
+\textbf{Adjusted response}
+\[
+z
+=
+X b^{(m-1)}
++
+\Delta (p-\pi)
+=
+\eta + \Delta (p-\pi),
+\]
+where
+\[
+\Delta
+=
+\operatorname{diag}\!\left(
+\frac{1}{\phi'(\eta_i)}
+\right).
+\]
+\textbf{Design matrix}
+\[
+X=
+\begin{pmatrix}
+1 & x_1\\
+1 & x_2\\
+\vdots & \vdots\\
+1 & x_n
+\end{pmatrix}.
+\]
+The iteration proceeds until $b^{(m)}$ converges.
+
+\subsection*{Example: Logistic Regression Model}
+Let
+\[
+Y_i \sim \operatorname{Binomial}(n_i,\pi_i), 
+\qquad 
+p_i=\frac{y_i}{n_i}.
+\]
+
+The logistic link function is
+\[
+g(\pi_i)=\log\!\left(\frac{\pi_i}{1-\pi_i}\right)=\eta_i,
+\]
+with linear predictor
+\[
+\eta_i=\beta_1+\beta_2 x_i .
+\]
+Equivalently,
+\[
+\pi_i=\frac{e^{\eta_i}}{1+e^{\eta_i}}.
+\]
+The maximum likelihood estimate of $\beta=(\beta_1,\beta_2)'$
+can be obtained using the \textbf{Iteratively Reweighted Least Squares (IRLS)} algorithm,
+which at iteration $m$ solves
+\[
+(X'WX)^{(m-1)} b^{(m)} = X'Wz .
+\]
+The matrices are
+\[
+W=\operatorname{diag}\!\left(n_i\pi_i(1-\pi_i)\right),
+\]
+\[
+\Delta=\operatorname{diag}(g^\prime(\pi_i)) = \operatorname{diag}(\frac{1}{\pi_i(1-\pi_i)})
+\]
+\[
+z=\eta+\frac{p-\pi}{\pi(1-\pi)},
+\]
+and
+\[
+X=
+\begin{pmatrix}
+1 & x_1\\
+1 & x_2\\
+\vdots & \vdots\\
+1 & x_n
+\end{pmatrix}.
+\]
+The iteration proceeds until convergence of $b^{(m)}$.
+
+\subsection*{Example: Binomial GLM with inverse log–log link}
+Let
+\[
+Y_i \sim \operatorname{Binomial}(n_i,\pi_i), 
+\qquad 
+p_i=\frac{y_i}{n_i}.
+\]
+The link function is
+\[
+g(\pi_i)=\log\!\big(-\log(1-\pi_i)\big)=\eta_i,
+\qquad
+\eta_i=\beta_1+\beta_2 x_i .
+\]
+Hence
+\[
+\pi_i
+=
+1-\exp\!\big(-e^{\eta_i}\big).
+\]
+The MLE of $\beta=(\beta_1,\beta_2)'$ can be obtained by
+\textbf{Iteratively Reweighted Least Squares (IRLS)}
+\[
+(X'WX)^{(m-1)} b^{(m)} = X'Wz .
+\]
+\textbf{Derivative of the inverse link}
+\[
+\phi'(\eta_i)
+=
+\frac{d\pi_i}{d\eta_i}
+=
+e^{\eta_i}\exp(-e^{\eta_i}).
+\]
+\textbf{Derivative of the link}
+\[
+g'(\pi_i)
+=
+\frac{1}{(1-\pi_i)\,[-\log(1-\pi_i)]}.
+\]
+\textbf{Weight matrix}
+\[
+W
+=
+\operatorname{diag}\!\left(
+\frac{1}{\operatorname{Var}(p_i)\,[g'(\pi_i)]^2}
+\right)
+=
+\operatorname{diag}\!\left(
+n_i
+\frac{(1-\pi_i)^2[\log(1-\pi_i)]^2}{\pi_i(1-\pi_i)}
+\right).
+\]
+\textbf{Derivative matrix}
+\[
+\Delta
+=
+\operatorname{diag}\!\big(g'(\pi_i)\big)
+=
+\operatorname{diag}\!\left(
+\frac{1}{(1-\pi_i)\,[-\log(1-\pi_i)]}
+\right).
+\]
+\textbf{Adjusted response}
+\[
+z
+=
+X b^{(m-1)} + \Delta(p-\pi)
+=
+\eta + \Delta(p-\pi).
+\]
+
+\subsection*{Example: Binomial GLM with log–log link}
+Let
+\[
+Y_i \sim \operatorname{Binomial}(n_i,\pi_i),
+\qquad
+p_i=\frac{y_i}{n_i}.
+\]
+Assume the link
+\[
+g(\pi_i)=\log(-\log \pi_i)=\eta_i,
+\qquad
+\eta_i=\beta_1+\beta_2 x_i .
+\]
+Hence the inverse link is
+\[
+\pi_i
+=
+\exp(-e^{\eta_i}).
+\]
+The MLE of $\beta$ can be obtained by the
+\textbf{Iteratively Reweighted Least Squares (IRLS)} algorithm
+\[
+(X'WX)^{(m-1)} b^{(m)} = X'Wz .
+\]
+\textbf{Variance of the proportion}
+\[
+\operatorname{Var}(p_i)=\frac{\pi_i(1-\pi_i)}{n_i}.
+\]
+\textbf{Derivative of the link}
+\[
+g'(\pi_i)
+=
+-\frac{1}{\pi_i \log \pi_i}.
+\]
+\textbf{Weight matrix}
+\[
+W
+=
+\operatorname{diag}\!\left(
+\frac{1}{\operatorname{Var}(p_i)\,[g'(\pi_i)]^2}
+\right)
+=
+\operatorname{diag}\!\left(
+\frac{n_i \pi_i (\log \pi_i)^2}{1-\pi_i}
+\right).
+\]
+\textbf{Derivative matrix}
+\[
+\Delta
+=
+\operatorname{diag}\!\big(g'(\pi_i)\big)
+=
+\operatorname{diag}\!\left(
+-\frac{1}{\pi_i \log \pi_i}
+\right).
+\]
+\textbf{Adjusted response}
+\[
+z
+=
+X b^{(m-1)}+\Delta(p-\pi)
+=
+\eta+\Delta(p-\pi).
+\]
+Example 7.3
+\newpage
+\section{Multinomial logistic model}
+\subsection{Logistic Model with Binary Covariate}
+Suppose the response variable $Y$ has $J$ categories with probabilities
+\[
+\pi_j = P(Y=j), \qquad j=1,\dots,J,
+\]
+and let $x \in \{0,1\}$ be a binary covariate.
+
+Taking category $1$ as the baseline, the multinomial logit model is
+\[
+\log\left(\frac{\pi_j}{\pi_1}\right)
+=
+\beta_{0j} + \beta_{1j}x,
+\qquad j=2,\dots,J.
+\]
+
+\paragraph{Interpretation for $x=0$ and $x=1$}
+When $x=0$,
+\[
+\log\left(\frac{\pi_{j0}}{\pi_{10}}\right)
+=
+\beta_{0j}.
+\]
+When $x=1$,
+\[
+\log\left(\frac{\pi_{j1}}{\pi_{11}}\right)
+=
+\beta_{0j}+\beta_{1j}.
+\]
+Here $\pi_{jk}=P(Y=j\mid x=k)$ for $k\in\{0,1\}$.
+
+\paragraph{Odds Ratio}
+The odds ratio comparing $x=1$ to $x=0$ for category $j$ relative to the
+baseline category $1$ is
+\[
+OR_j
+=
+\frac{\pi_{j1}/\pi_{11}}{\pi_{j0}/\pi_{10}}.
+\]
+Using the model,
+\[
+\log(OR_j)
+=
+\log\left(\frac{\pi_{j1}}{\pi_{11}}\right)
+-
+\log\left(\frac{\pi_{j0}}{\pi_{10}}\right)
+=
+(\beta_{0j}+\beta_{1j})-\beta_{0j}
+=
+\beta_{1j}.
+\]
+
+Therefore,
+\[
+OR_j = e^{\beta_{1j}}.
+\]
+
+\paragraph{Estimated Odds Ratio}
+With estimated probabilities $\hat\pi_{jk}$,
+\[
+\widehat{OR}_j
+=
+\frac{\hat\pi_{j1}/\hat\pi_{11}}
+     {\hat\pi_{j0}/\hat\pi_{10}}
+=
+\exp(\hat\beta_{1j}).
+\]
+The CI is 
+\[
+\exp\!\left(
+\hat{\beta}_{1j} \pm 1.96\,\sqrt{\widehat{\operatorname{Var}}(\hat{\beta}_{1j})}
+\right)
+\]
+which is equivalent to
+$$
+\left(e^{\hat{\beta}_{1 j}-1.96 S E\left(\hat{\beta}_{1 j}\right)}, e^{\hat{\beta}_{1 j}+1.96 S E\left(\hat{\beta}_{1 j}\right)}\right)
+$$
+\subsection{Nominal and Ordinal Regression}
+Let
+\[
+Y_i \in \{1,2,\dots,K\}, \qquad
+\Pr(Y_i=j \mid x_i)=\pi_{ij}, \qquad
+\sum_{j=1}^K \pi_{ij}=1.
+\]
+For nominal logistic regression, choose category \(K\) as the baseline. Then, for
+\(j=1,\dots,K-1\),
+\[
+\log\left(\frac{\pi_{ij}}{\pi_{iK}}\right)=x_i^\top \beta_j.
+\]
+Equivalently,
+\[
+\pi_{ij}
+=
+\frac{\exp(x_i^\top \beta_j)}
+{1+\sum_{l=1}^{K-1}\exp(x_i^\top \beta_l)},
+\qquad j=1,\dots,K-1,
+\]
+and
+\[
+\pi_{iK}
+=
+\frac{1}
+{1+\sum_{l=1}^{K-1}\exp(x_i^\top \beta_l)}.
+\]
+\[
+Y_i \in \{1,2,\dots,K\}, \qquad
+\Pr(Y_i \le j \mid x_i)=\gamma_{ij}, \qquad j=1,\dots,K-1.
+\]
+The ordinal logistic regression model (proportional odds model) is
+\[
+\log\left(\frac{\Pr(Y_i \le j \mid x_i)}{\Pr(Y_i > j \mid x_i)}\right)
+=
+\log\left(\frac{\gamma_{ij}}{1-\gamma_{ij}}\right)
+=
+\alpha_j - x_i^\top \beta,
+\qquad j=1,\dots,K-1.
+\]
+Equivalently,
+\[
+\Pr(Y_i \le j \mid x_i)
+=
+\gamma_{ij}
+=
+\frac{\exp(\alpha_j - x_i^\top \beta)}
+{1+\exp(\alpha_j - x_i^\top \beta)},
+\qquad j=1,\dots,K-1.
+\]
+
+The category probabilities are
+\[
+\Pr(Y_i=1\mid x_i)=\gamma_{i1},
+\]
+\[
+\Pr(Y_i=j\mid x_i)=\gamma_{ij}-\gamma_{i,j-1},
+\qquad j=2,\dots,K-1,
+\]
+\[
+\Pr(Y_i=K\mid x_i)=1-\gamma_{i,K-1}.
+\]
+\subsection*{Properties of the proportional odds model.}
+For an ordinal response \(Y_i \in \{1,\dots,K\}\), define
+\[
+\gamma_{ij}=\Pr(Y_i \le j \mid x_i), \qquad j=1,\dots,K-1.
+\]
+The proportional odds model is
+\[
+\log\left(\frac{\gamma_{ij}}{1-\gamma_{ij}}\right)=\alpha_j-x_i^\top\beta.
+\]
+
+Its main properties are:
+\begin{enumerate}
+    \item It is a model for \emph{ordered} categorical responses.
+    \item It models \emph{cumulative logits}.
+    \item The slope vector \(\beta\) is the same for all cutpoints \(j\) (proportional odds assumption).
+    \item Only the intercepts \(\alpha_j\) vary with \(j\).
+    \item The cumulative logit curves are parallel in \(x_i\).
+    \item The intercepts satisfy
+    \[
+    \alpha_1<\alpha_2<\cdots<\alpha_{K-1}.
+    \]
+    \item For a one-unit increase in \(x_r\), the cumulative odds are multiplied by
+    \[
+    \exp(-\beta_r),
+    \]
+    uniformly over all cutpoints.
+    \item Equivalently, the odds of being in a higher category are multiplied by
+    \[
+    \exp(\beta_r).
+    \]
+    \item The category probabilities are recovered from the cumulative probabilities by
+    \[
+    \Pr(Y_i=1\mid x_i)=\gamma_{i1},
+    \]
+    \[
+    \Pr(Y_i=j\mid x_i)=\gamma_{ij}-\gamma_{i,j-1}, \qquad j=2,\dots,K-1,
+    \]
+    \[
+    \Pr(Y_i=K\mid x_i)=1-\gamma_{i,K-1}.
+    \]
+    \item The model uses fewer parameters than nominal logistic regression.
+    \item When \(K=2\), it reduces to ordinary binary logistic regression.
+    \item It is appropriate only when the proportional odds assumption is reasonable.
+\end{enumerate}
+
+\paragraph{Adjacent-categories logit model}
+\[
+\log\left(\frac{\pi_{ij}}{\pi_{i,j+1}}\right)=\alpha_j-x_i^\top\beta,
+\qquad j=1,\dots,K-1.
+\]
+\textbf{Main properties:}
+\begin{enumerate}
+    \item It is for ordinal categorical responses.
+    \item It models \emph{adjacent-category} odds, not cumulative odds.
+    \item The same slope vector \(\beta\) is used for all adjacent logits.
+    \item Only the intercepts \(\alpha_j\) vary with \(j\).
+    \item For a one-unit increase in \(x_r\), the odds of category \(j\) versus \(j+1\) are multiplied by
+    \[
+    \exp(-\beta_r).
+    \]
+    \item It has \((K-1)+p\) parameters.
+    \item It uses the ordering of the response categories.
+    \item When \(K=2\), it reduces to binary logistic regression.
+\end{enumerate}
+\paragraph{Continuation-ratio logit model}
+\[
+\pi_{ij}=\Pr(Y_i=j\mid x_i), \qquad j=1,\dots,K.
+\]
+The continuation-ratio logit model is
+\[
+\log\left(\frac{\Pr(Y_i=j\mid x_i)}{\Pr(Y_i>j\mid x_i)}\right)
+=
+\log\left(\frac{\pi_{ij}}{\pi_{i,j+1}+\cdots+\pi_{iK}}\right)
+=
+\alpha_j-x_i^\top\beta,
+\qquad j=1,\dots,K-1.
+\]
+Equivalently,
+\[
+\log\left(
+\frac{\Pr(Y_i=j\mid Y_i\ge j,\;x_i)}
+{\Pr(Y_i>j\mid Y_i\ge j,\;x_i)}
+\right)
+=
+\alpha_j-x_i^\top\beta.
+\]
+
+\textbf{Main properties:}
+\begin{enumerate}
+    \item It is for ordinal categorical responses.
+    \item It models the odds of category \(j\) versus all higher categories.
+    \item It has a sequential interpretation.
+    \item The same slope vector \(\beta\) is used for all logits.
+    \item Only the intercepts \(\alpha_j\) vary with \(j\).
+    \item For a one-unit increase in \(x_r\), the odds are multiplied by
+    \[
+    \exp(-\beta_r).
+    \]
+    \item It has \((K-1)+p\) parameters.
+    \item It reduces to binary logistic regression when \(K=2\).
+\end{enumerate}
+Model can be compared with goodness of fit test
+\newpage
+\section{Quasi-likelihood for Generalized Linear Models}
+
+Let $Y_1,\dots,Y_n$ be independent responses with
+\[
+\mathbb{E}(Y_i)=\mu_i,\qquad \mathrm{Var}(Y_i)=\phi V(\mu_i),
+\]
+ where $V(\mu_i)$ is the variance function and $\phi>0$ is the dispersion parameter.
+
+In the quasi-likelihood approach, one does not assume a full probability model for $Y_i$. Instead, one seeks a function playing the role of a log-likelihood whose score with respect to $\mu_i$ has the same first two moments as the usual likelihood score in a correctly specified parametric model.
+
+\subsection{Quasi-score conditions}
+For each observation $i$, let $\ell_i(\mu_i;y_i)$ denote the contribution of the $i$th observation to a log-likelihood-type function. We require that its derivative with respect to $\mu_i$ satisfy the following three conditions:
+\begin{align}
+\mathbb{E}\!\left(\frac{\partial \ell_i}{\partial \mu_i}\right) &= 0, \label{eq:ql-cond1}\\
+\mathrm{Var}\!\left(\frac{\partial \ell_i}{\partial \mu_i}\right) &= \frac{1}{\phi V(\mu_i)}, \label{eq:ql-cond2}\\
+-\mathbb{E}\!\left(\frac{\partial^2 \ell_i}{\partial \mu_i^2}\right) &= \frac{1}{\phi V(\mu_i)}. \label{eq:ql-cond3}
+\end{align}
+Thus the score is unbiased, and its variance equals the expected information.
+
+\begin{theorem}[Quasi-score identities]
+Suppose
+\[
+\mathbb{E}(Y_i)=\mu_i,\qquad \mathrm{Var}(Y_i)=\phi V(\mu_i).
+\]
+Define
+\[
+q_i(\mu_i;y_i)=\frac{y_i-\mu_i}{\phi V(\mu_i)}.
+\]
+Then:
+\begin{align*}
+\mathbb{E}\{q_i(\mu_i;Y_i)\} &= 0,\\
+\mathrm{Var}\{q_i(\mu_i;Y_i)\} &= \frac{1}{\phi V(\mu_i)},\\
+-\mathbb{E}\!\left(\frac{\partial q_i(\mu_i;Y_i)}{\partial \mu_i}\right) &= \frac{1}{\phi V(\mu_i)}.
+\end{align*}
+Hence $q_i$ satisfies the quasi-likelihood score conditions.
+\end{theorem}
+
+\begin{proof}
+First,
+\[
+\mathbb{E}\{q_i(\mu_i;Y_i)\}
+=
+\mathbb{E}\left(\frac{Y_i-\mu_i}{\phi V(\mu_i)}\right)
+=
+\frac{\mathbb{E}(Y_i)-\mu_i}{\phi V(\mu_i)}
+=
+0.
+\]
+Second,
+\[
+\mathrm{Var}\{q_i(\mu_i;Y_i)\}
+=
+\mathrm{Var}\left(\frac{Y_i-\mu_i}{\phi V(\mu_i)}\right)
+=
+\frac{\mathrm{Var}(Y_i)}{\phi^2 V(\mu_i)^2}
+=
+\frac{\phi V(\mu_i)}{\phi^2 V(\mu_i)^2}
+=
+\frac{1}{\phi V(\mu_i)}.
+\]
+
+Finally, differentiating $q_i(\mu_i;y_i)$ with respect to $\mu_i$ gives
+\[
+\frac{\partial q_i}{\partial \mu_i}
+=
+-\frac{1}{\phi V(\mu_i)}
+-\frac{(y_i-\mu_i)V'(\mu_i)}{\phi V(\mu_i)^2}.
+\]
+Taking expectation,
+\[
+\mathbb{E}\!\left(\frac{\partial q_i}{\partial \mu_i}\right)
+=
+-\frac{1}{\phi V(\mu_i)}
+-\frac{V'(\mu_i)}{\phi V(\mu_i)^2}\,
+\mathbb{E}(Y_i-\mu_i).
+\]
+Since $\mathbb{E}(Y_i-\mu_i)=0$, this becomes
+\[
+\mathbb{E}\!\left(\frac{\partial q_i}{\partial \mu_i}\right)
+=
+-\frac{1}{\phi V(\mu_i)}.
+\]
+Therefore,
+\[
+-\mathbb{E}\!\left(\frac{\partial q_i}{\partial \mu_i}\right)
+=
+\frac{1}{\phi V(\mu_i)}.
+\]
+This proves the result.
+\end{proof}
+Since the quasi-score is defined by
+\[
+\frac{\partial Q_i}{\partial \mu_i}
+=
+\frac{y_i-\mu_i}{\phi V(\mu_i)},
+\]
+the associated quasi-likelihood contribution from the $i$th observation is obtained by integration:
+\[
+Q_i(\mu_i;y_i)
+=
+\int_{y_i}^{\mu_i}\frac{y_i-t}{\phi V(t)}\,dt,
+\]
+where $t$ is a dummy variable of integration.
+
+Equivalently,
+\[
+Q_i(\mu_i;y_i)
+=
+-\int_{\mu_i}^{y_i}\frac{y_i-t}{\phi V(t)}\,dt.
+\]
+By construction,
+\[
+\frac{\partial Q_i(\mu_i;y_i)}{\partial \mu_i}
+=
+\frac{y_i-\mu_i}{\phi V(\mu_i)}.
+\]
+The overall quasi-likelihood is then
+\[
+Q(\mu;y)=\sum_{i=1}^n Q_i(\mu_i;y_i).
+\]
+
+\subsection*{Example: normal case}
+
+Take
+\[
+\phi=\sigma^2=1,
+\qquad
+b(\theta(\mu_i))=\frac{\theta(\mu_i)^2}{2}.
+\]
+Then for the normal exponential family,
+\[
+\mu_i=b'(\theta_i)=\theta_i,
+\qquad
+V(\mu_i)=b''(\theta_i)=1.
+\]
+Hence
+\[
+\frac{\partial Q_i}{\partial \mu_i}
+=
+\frac{y_i-\mu_i}{\phi V(\mu_i)}
+=
+y_i-\mu_i.
+\]
+Integrating,
+\[
+Q_i(\mu_i;y_i)
+=
+\int_{y_i}^{\mu_i}(y_i-t)\,dt
+=
+-\frac{(y_i-\mu_i)^2}{2}.
+\]
+
+Thus the total quasi-likelihood is
+\[
+Q(\mu)
+=
+\sum_{i=1}^n Q_i
+=
+-\frac{1}{2}\sum_{i=1}^n (y_i-\mu_i)^2.
+\]
+
+If $\mu_i=\theta$ for all $i$, then
+\[
+Q(\theta)
+=
+-\frac{1}{2}\sum_{i=1}^n (y_i-\theta)^2.
+\]
+Maximizing $Q(\theta)$ is equivalent to minimizing
+\[
+\sum_{i=1}^n (y_i-\theta)^2.
+\]
+So
+\[
+\hat\theta=\bar y.
+\]
+It is consistent but less efficient
+\[
+\operatorname{Var}(\theta)\geq I(\theta)^{-1}
+\]
+\subsection{Quasi-deviance Computation}
+
+The quasi-deviance is defined by
+\[
+D(y,\mu)
+=
+2\sum_{i=1}^n \{Q_i(y_i;y_i)-Q_i(\mu_i;y_i)\}.
+\]
+Equivalently, using the integral form of the quasi-likelihood,
+\[
+D(y,\mu)
+=
+2\sum_{i=1}^n \int_{\mu_i}^{y_i}\frac{y_i-t}{\phi V(t)}\,dt.
+\]
+\textbf{In the normal case} with
+\[
+\phi=1,\qquad V(\mu_i)=1,
+\]
+we have
+\[
+Q_i(\mu_i;y_i)=-\frac{(y_i-\mu_i)^2}{2},
+\qquad
+Q_i(y_i;y_i)=0.
+\]
+Hence
+\[
+D(y,\mu)
+=
+2\sum_{i=1}^n \left(0+\frac{(y_i-\mu_i)^2}{2}\right)
+=
+\sum_{i=1}^n (y_i-\mu_i)^2.
+\]
+So for the Gaussian model, the quasi-deviance is just the residual sum of squares.
+
+\subsection{$\beta$ estimation in a GLM via quasi-likelihood}
+
+In a GLM, let
+\[
+g(\mu_i)=\eta_i=x_i^T\beta,
+\]
+where $g(\cdot)$ is the link function. The quasi-likelihood estimator $\hat\beta$ is obtained by solving
+\[
+\frac{\partial Q}{\partial \beta}
+=
+\sum_{i=1}^n
+\frac{\partial Q(\mu_i,y_i)}{\partial \mu_i}
+\frac{\partial \mu_i}{\partial \beta}
+=
+0.
+\]
+Since
+\[
+\frac{\partial Q(\mu_i,y_i)}{\partial \mu_i}
+=
+\frac{y_i-\mu_i}{\phi V(\mu_i)},
+\]
+we get the estimating equation
+\[
+\sum_{i=1}^n
+\frac{y_i-\mu_i}{\phi V(\mu_i)}
+\frac{\partial \mu_i}{\partial \beta}
+=
+0.
+\]
+
+Now
+\[
+\frac{\partial \mu_i}{\partial \beta}
+=
+\frac{d\mu_i}{d\eta_i}\frac{\partial \eta_i}{\partial \beta}
+=
+\frac{d\mu_i}{d\eta_i}x_i,
+\]
+so the quasi-score for $\beta$ is
+\[
+U(\beta)
+=
+\sum_{i=1}^n
+\frac{(y_i-\mu_i)}{\phi V(\mu_i)}
+\frac{1}{g^\prime(\mu_i)}x_i
+=
+0.
+\]
+In matrix form, this is
+\[
+U(\beta)
+=
+\frac{D^TV^{-1}(y-\mu)}{\sigma^2}=0,
+\]
+where
+\[
+V = diag(V(\mu_1),\dots,V(\mu_n)),\quad D = diag(\frac{\partial \mu_1}{\partial \beta},\dots,(\frac{\partial \mu_n}{\partial \beta})
+\]
+Thus $\hat\beta$ is the solution of the quasi-score equation
+\[
+\sum_{i=1}^n
+\frac{(y_i-\mu_i)}{V(\mu_i)}
+\frac{d\mu_i}{d\eta_i}x_i
+=
+0,
+\]
+up to the constant factor $1/\phi$.
+\subsection{Newton--Raphson to solve Quasi-Score GLM}
+
+Write the quasi-score as
+\[
+U(\beta)
+=
+\frac{D^T V^{-1}(y-\mu)}{\sigma^2}
+=
+0,
+\]
+where
+\[
+V=\operatorname{diag}\bigl(V(\mu_1),\dots,V(\mu_n)\bigr),
+\]
+and
+\[
+D=\frac{\partial \mu}{\partial \beta^T}
+=
+\begin{pmatrix}
+\frac{\partial \mu_1}{\partial \beta_1} & \cdots & \frac{\partial \mu_1}{\partial \beta_p}\\
+\vdots & \ddots & \vdots\\
+\frac{\partial \mu_n}{\partial \beta_1} & \cdots & \frac{\partial \mu_n}{\partial \beta_p}
+\end{pmatrix}.
+\]
+Thus $D$ is the Jacobian matrix of $\mu=(\mu_1,\dots,\mu_n)^T$ with respect to $\beta$.
+
+Newton--Raphson updates $\beta$ by
+\[
+\beta^{(m+1)}
+=
+\beta^{(m)}
+-
+\left[
+\frac{\partial U(\beta)}{\partial \beta^T}
+\right]^{-1}_{\beta=\beta^{(m)}}
+U(\beta^{(m)}).
+\]
+Using the usual Fisher scoring approximation,
+\[
+-\frac{\partial U(\beta)}{\partial \beta^T}
+\approx
+\frac{D^T V^{-1} D}{\sigma^2},
+\]
+so the update becomes
+\[
+\beta^{(m+1)}
+=
+\beta^{(m)}
++
+(D^T V^{-1}D)^{-1}D^T V^{-1}(y-\mu).
+\]
+Equivalently,
+\[
+\Delta\beta
+=
+(D^T V^{-1}D)^{-1}D^T V^{-1}(y-\mu),
+\qquad
+\beta^{(m+1)}=\beta^{(m)}+\Delta\beta.
+\]
+This is the Newton--Raphson/Fisher scoring step for estimating $\beta$ in the GLM quasi-likelihood framework.
+\[
+U(\beta)=\frac{D^T V^{-1}(y-\mu)}{\sigma^2}.
+\]
+Since
+\[
+\mathrm{Cov}(y)=\sigma^2 V,
+\]
+we have
+\[
+\mathrm{Cov}\{U(\beta)\}
+=
+\frac{1}{\sigma^4}D^T V^{-1}\,\mathrm{Cov}(y)\,V^{-1}D
+=
+\frac{1}{\sigma^4}D^T V^{-1}(\sigma^2 V)V^{-1}D.
+\]
+Therefore,
+\[
+\mathrm{Cov}\{U(\beta)\}
+=
+\frac{1}{\sigma^2}D^T V^{-1}D.
+\]
+\newpage
+\section{Generalized Estimating Equations}
+For clustered/longitudinal data, let there be \(n\) independent subjects (clusters), where subject \(i\) has \(m_i\) repeated measurements.
+
+The response vector for subject \(i\) is
+\[
+Y_i =
+\begin{pmatrix}
+Y_{i1}\\
+Y_{i2}\\
+\vdots\\
+Y_{im_i}
+\end{pmatrix},
+\qquad i=1,\dots,n.
+\]
+The corresponding covariate matrix is
+\[
+X_i =
+\begin{pmatrix}
+X_{i1}^\top\\
+X_{i2}^\top\\
+\vdots\\
+X_{im_i}^\top
+\end{pmatrix},
+\]
+where each \(X_{ij}\) is a \(p\times 1\) covariate vector, so that
+\[
+X_i \in \mathbb{R}^{m_i\times p},
+\qquad
+Y_i \in \mathbb{R}^{m_i}.
+\]
+The marginal mean vector is
+\[
+\mu_i = \mathbb{E}(Y_i \mid X_i)
+=
+\begin{pmatrix}
+\mu_{i1}\\
+\mu_{i2}\\
+\vdots\\
+\mu_{im_i}
+\end{pmatrix}.
+\]
+The GEE marginal model specifies
+\[
+g(\mu_{ij}) =\eta_{ij}= X_{ij}^\top \beta,
+\qquad j=1,\dots,m_i,
+\]
+or equivalently, in vector form,
+\[
+g(\mu_i)=
+\begin{pmatrix}
+g(\mu_{i1})\\
+g(\mu_{i2})\\
+\vdots\\
+g(\mu_{im_i})
+\end{pmatrix}
+= X_i \beta.
+\]
+The marginal variance is written as
+\[
+\mathrm{Var}(Y_i\mid X_i)=V_i
+=
+A_i^{1/2} R_i(\alpha) A_i^{1/2},
+\]
+where
+\[
+A_i=\mathrm{diag}\!\bigl(\phi V(\mu_{i1}),\dots,\phi V(\mu_{im_i})\bigr)
+\]
+contains the marginal variances, and \(R_i(\alpha)\) is the working correlation matrix for the repeated measurements within subject \(i\).
+
+For the marginal model
+\[
+g(\mu_{ij}) = X_{ij}^\top \beta,
+\qquad
+\mu_i = \mathbb{E}(Y_i\mid X_i),
+\]
+the generalized estimating equation (GEE) for \(\beta\) is
+\[
+U(\beta)
+=
+\sum_{i=1}^n D_i^\top V_i^{-1}(Y_i-\mu_i)=0,
+\]
+where
+\[
+D_i=\frac{\partial \mu_i}{\partial \beta^\top},
+\qquad
+V_i=\mathrm{Var}(Y_i\mid X_i).
+\]
+Using the GEE working covariance structure,
+\[
+V_i=A_i^{1/2}R_i(\alpha)A_i^{1/2},
+\]
+with
+\[
+A_i=\mathrm{diag}\!\bigl(\phi V(\mu_{i1}),\dots,\phi V(\mu_{im_i})\bigr),
+\]
+we get
+\[
+\sum_{i=1}^n
+D_i^\top
+A_i^{-1/2}R_i(\alpha)^{-1}A_i^{-1/2}
+(Y_i-\mu_i)=0.
+\]
+This is the extension of the GLM quasi-score equation
+\[
+\sum_{i=1}^n D_i^\top V_i^{-1}(Y_i-\mu_i)=0
+\]
+from independent data to clustered/longitudinal data by incorporating the within-cluster working correlation \(R_i(\alpha)\).
+
+\subsection{Solving GEE}
+A common two-step iterative algorithm for solving the GEE is:
+\[
+U(\beta)
+=
+\sum_{i=1}^n D_i^\top V_i^{-1}(Y_i-\mu_i)=0,
+\qquad
+V_i=A_i^{1/2}R_i(\alpha)A_i^{1/2}.
+\]
+\textbf{Step 1: Update \(\beta\) given \(\alpha,\phi\).}  
+
+Given current estimates \(\alpha^{(t)},\phi^{(t)}\), form
+\[
+V_i^{(t)}=A_i^{(t)1/2}R_i\!\left(\alpha^{(t)}\right)A_i^{(t)1/2},
+\]
+and solve
+\[
+\sum_{i=1}^n D_i^\top \bigl(V_i^{(t)}\bigr)^{-1}(Y_i-\mu_i)=0
+\]
+for \(\beta\), usually by Fisher scoring / Newton--Raphson:
+\[
+\beta^{(t+1)}
+=
+\beta^{(t)}
++
+\left[
+\sum_{i=1}^n D_i^\top \bigl(V_i^{(t)}\bigr)^{-1} D_i
+\right]^{-1}
+\sum_{i=1}^n D_i^\top \bigl(V_i^{(t)}\bigr)^{-1}(Y_i-\mu_i).
+\]
+\textbf{Step 2: Update \(\alpha\) and \(\phi\) given \(\beta\).}  
+
+Using the updated \(\beta^{(t+1)}\), compute fitted means
+\[
+\mu_{ij}^{(t+1)}=g^{-1}(X_{ij}^\top \beta^{(t+1)}),
+\]
+then update the nuisance parameters:
+\begin{itemize}
+\item estimate \(\phi^{(t+1)}\) from Pearson residuals;
+\item estimate \(\alpha^{(t+1)}\) from the within-cluster residual correlations.
+\end{itemize}
+Repeat Steps 1 and 2 until convergence of \(\beta\) (and usually also \(\alpha,\phi\)).
+\subsection*{GEE estimation consistency}
+Under regularity conditions, the GEE estimator \(\hat\beta\) is consistent and asymptotically normal:
+\[
+\hat\beta \xrightarrow{p} \beta_0,
+\]
+and
+\[
+\sqrt{n}\,(\hat\beta-\beta_0)
+\xrightarrow{d}
+N\!\left(0,\; A^{-1} B A^{-1}\right),
+\]
+where
+\[
+A
+=
+\lim_{n\to\infty}
+\frac{1}{n}
+\sum_{i=1}^n
+D_i^\top V_i^{-1} D_i,
+\]
+and
+\[
+B
+=
+\lim_{n\to\infty}
+\frac{1}{n}
+\sum_{i=1}^n
+D_i^\top V_i^{-1}
+\mathrm{Cov}(Y_i)
+V_i^{-1} D_i.
+\]
+Thus the asymptotic covariance matrix is the \emph{sandwich form}
+\[
+\mathrm{Var}(\hat\beta)
+\approx
+\frac{1}{n}A^{-1}BA^{-1}.
+\]
+If the working correlation is correctly specified, then \(B=A\), so
+\[
+\sqrt{n}\,(\hat\beta-\beta_0)
+\xrightarrow{d}
+N\!\left(0,\; A^{-1}\right).
+\]
+\subsection{Covariance Matrix Estimation}
+A consistent estimator of the asymptotic covariance is the robust sandwich estimator. That can be estimated with:
+\[
+\widehat{\mathrm{Var}}(\hat\beta)
+=
+\left(\sum_{i=1}^n D_i^\top V_i^{-1} D_i\right)^{-1}
+\left(\sum_{i=1}^n D_i^\top V_i^{-1}(Y_i-\mu_i)(Y_i-\mu_i)^\top V_i^{-1} D_i\right)
+\left(\sum_{i=1}^n D_i^\top V_i^{-1} D_i\right)^{-1}.
+\]
+For the \emph{compound symmetry} (exchangeable) working correlation structure, the within-cluster correlation matrix is
+\[
+R_i(\alpha)=
+\begin{pmatrix}
+1 & \alpha & \alpha & \cdots & \alpha\\
+\alpha & 1 & \alpha & \cdots & \alpha\\
+\alpha & \alpha & 1 & \cdots & \alpha\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+\alpha & \alpha & \alpha & \cdots & 1
+\end{pmatrix}_{m_i\times m_i}.
+\]
+Thus every pair of distinct observations in the same cluster has the same correlation:
+\[
+\mathrm{Corr}(Y_{ij},Y_{ik})=\alpha,\qquad j\neq k.
+\]
+The corresponding working covariance matrix is
+\[
+V_i
+=
+A_i^{1/2}R_i(\alpha)A_i^{1/2}.
+\]
+If all marginal variances are equal to \(\sigma^2\), then
+\[
+V_i=\sigma^2 R_i(\alpha).
+\]
+Under the compound symmetry (exchangeable) working correlation structure, define the Pearson residual by
+\[
+r_{ij}
+=
+\frac{Y_{ij}-\hat\mu_{ij}}
+{\sqrt{\hat\phi\,V(\hat\mu_{ij})}}.
+\]
+Then the common correlation parameter \(\alpha\) is typically estimated by the average of the within-cluster Pearson residual cross-products:
+\[
+\hat\alpha
+=
+\frac{\displaystyle \sum_{i=1}^n \sum_{j<k} r_{ij}r_{ik}}
+{\displaystyle \sum_{i=1}^n \binom{m_i}{2}}.
+\]
+Equivalently, writing it in terms of \(Y_{ij}\) and \(\hat\mu_{ij}\),
+\[
+\hat\alpha
+=
+\frac{\displaystyle \sum_{i=1}^n \sum_{j<k}
+\frac{(Y_{ij}-\hat\mu_{ij})(Y_{ik}-\hat\mu_{ik})}
+{\sqrt{\hat\phi\,V(\hat\mu_{ij})}\sqrt{\hat\phi\,V(\hat\mu_{ik})}}}
+{\displaystyle \sum_{i=1}^n \binom{m_i}{2}}.
+\]
+So for exchangeable correlation, \(\hat\alpha\) is just the average empirical Pearson correlation over all pairs within the same cluster.
+
+\subsection*{Example: Gaussian Case}
+In the Gaussian case, suppose
+\[
+Y_i \sim N(\mu_i,V_i), \qquad \mu_i = X_i\beta,
+\]
+with clusters independent, i.e.
+\[
+\mathrm{Cov}(Y_i,Y_{i'})=0, \qquad i\neq i'.
+\]
+If each \(V_i\) is known, then the GEE becomes
+\[
+\sum_{i=1}^n D_i^\top V_i^{-1}(Y_i-\mu_i)=0.
+\]
+Since
+\[
+\mu_i=X_i\beta,
+\qquad
+D_i=\frac{\partial \mu_i}{\partial \beta^\top}=X_i,
+\]
+the estimating equation is
+\[
+\sum_{i=1}^n X_i^\top V_i^{-1}(Y_i-X_i\beta)=0.
+\]
+Solving for \(\beta\) gives the generalized least squares estimator
+\[
+\hat\beta
+=
+\left(\sum_{i=1}^n X_i^\top V_i^{-1}X_i\right)^{-1}
+\left(\sum_{i=1}^n X_i^\top V_i^{-1}Y_i\right).
+\]
+Equivalently, stacking all clusters,
+\[
+Y=
+\begin{pmatrix}
+Y_1\\ \vdots\\ Y_n
+\end{pmatrix},
+\qquad
+X=
+\begin{pmatrix}
+X_1\\ \vdots\\ X_n
+\end{pmatrix},
+\qquad
+V=\mathrm{blockdiag}(V_1,\dots,V_n),
+\]
+we have
+\[
+\hat\beta=(X^\top V^{-1}X)^{-1}X^\top V^{-1}Y.
+\]
+Its covariance matrix is
+\[
+\mathrm{Var}(\hat\beta)=(X^\top V^{-1}X)^{-1}.
+\]
+If the covariance matrices \(V_i\) are unknown, a common approach is \emph{iterative feasible generalized least squares}.
+\medskip
+
+\textbf{Step 1: Initial estimate of \(\beta\).}  
+Start with an initial working covariance, for example
+\[
+V_i^{(0)}=I_{m_i},
+\]
+and compute the OLS estimator
+\[
+\beta^{(0)}
+=
+\left(\sum_{i=1}^n X_i^\top X_i\right)^{-1}
+\left(\sum_{i=1}^n X_i^\top Y_i\right).
+\]
+\medskip
+\textbf{Step 2: Estimate \(V_i\) from residuals.}  
+Using the current estimate \(\beta^{(t)}\), form residuals
+\[
+e_i^{(t)} = Y_i - X_i\beta^{(t)}.
+\]
+Then estimate the covariance matrix \(V_i\) by a parametric working model
+\[
+V_i = V_i(\theta),
+\]
+with parameter \(\theta\) estimated from the residuals \(e_i^{(t)}\). For example, estimate variance and correlation parameters by moment methods or maximum likelihood.
+\medskip
+
+\textbf{Step 3: Update \(\beta\).}  
+Given the updated covariance estimate \(\hat V_i^{(t)}\), solve
+\[
+\sum_{i=1}^n X_i^\top \bigl(\hat V_i^{(t)}\bigr)^{-1}(Y_i-X_i\beta)=0,
+\]
+so that
+\[
+\beta^{(t+1)}
+=
+\left(\sum_{i=1}^n X_i^\top \bigl(\hat V_i^{(t)}\bigr)^{-1}X_i\right)^{-1}
+\left(\sum_{i=1}^n X_i^\top \bigl(\hat V_i^{(t)}\bigr)^{-1}Y_i\right).
+\]
+
+\medskip
+\textbf{Step 4: Iterate.}  
+Repeat Steps 2 and 3 until convergence of \(\beta\) and the covariance parameters.
+\medskip
+Thus the iterative scheme is
+\[
+\beta^{(t)}
+\longrightarrow
+e_i^{(t)}=Y_i-X_i\beta^{(t)}
+\longrightarrow
+\hat V_i^{(t)}
+\longrightarrow
+\beta^{(t+1)}.
+\]
+This is the usual \emph{feasible GLS} / \emph{iterative GEE} procedure in the Gaussian case.
+\subsection*{The choice of $V$ estimation}
+If \(\hat V\) is substituted for \(V\) in the estimation of
+\[
+\mathrm{Var}(\hat\beta)=(X^\top V^{-1}X)^{-1},
+\]
+then the resulting estimator
+\[
+(X^\top \hat V^{-1}X)^{-1}
+\]
+usually underestimates the true variability of \(\hat\beta\), because it treats the estimated covariance matrix \(\hat V\) as if it were known and therefore ignores the additional variability from estimating \(V\).
+
+When \(V_i\) is replaced by \(\hat V_i\), this plug-in variance formula does not account for the uncertainty in estimating the covariance parameters. As a result, it is typically too small.
+
+A more reliable large-sample variance estimator is the sandwich estimator:
+\[
+\widehat{\mathrm{Var}}(\hat\beta)
+=
+A^{-1}BA^{-1},
+\]
+where
+\[
+A=\sum_{i=1}^n X_i^\top \hat V_i^{-1}X_i,
+\]
+and
+\[
+B=\sum_{i=1}^n X_i^\top \hat V_i^{-1}
+(Y_i-X_i\hat\beta)(Y_i-X_i\hat\beta)^\top
+\hat V_i^{-1}X_i.
+\]
+
+Thus,
+\[
+\widehat{\mathrm{Var}}(\hat\beta)
+=
+\left(\sum_{i=1}^n X_i^\top \hat V_i^{-1}X_i\right)^{-1}
+\left(\sum_{i=1}^n X_i^\top \hat V_i^{-1}
+(Y_i-X_i\hat\beta)(Y_i-X_i\hat\beta)^\top
+\hat V_i^{-1}X_i\right)
+\left(\sum_{i=1}^n X_i^\top \hat V_i^{-1}X_i\right)^{-1}.
+\]
+
+This estimator remains consistent even if the working covariance structure is misspecified, and it corrects for the downward bias of the naive plug-in estimator. It is consistent and robust to the misspecification of $V$.
+
+\subsection*{Small-Sample Variance Estimation in GEE}
+Although the sandwich estimator is consistent as the number of independent
+clusters \(K\) tends to infinity, it tends to underestimate the true
+variance when the number of clusters is small. In particular, when
+\(K\leq 30\), the resulting standard errors may be too small and Wald tests
+may have inflated Type I error rates.
+
+A cluster-level jackknife variance estimator can be used to reduce this
+small-sample bias. Let
+\[
+\widehat{\boldsymbol{\beta}}_{-i}
+\]
+denote the GEE estimator obtained after deleting the entire \(i\)-th cluster.
+The delete-one-cluster jackknife variance estimator is
+\[
+\widehat{\operatorname{Var}}_{\mathrm{JK}}
+\left(
+\widehat{\boldsymbol{\beta}}
+\right)
+=
+\frac{K-1}{K}
+\sum_{i=1}^{K}
+\left(
+\widehat{\boldsymbol{\beta}}_{-i}
+-
+\overline{\boldsymbol{\beta}}_{(-)}
+\right)
+\left(
+\widehat{\boldsymbol{\beta}}_{-i}
+-
+\overline{\boldsymbol{\beta}}_{(-)}
+\right)^{T},
+\]
+where
+\[
+\overline{\boldsymbol{\beta}}_{(-)}
+=
+\frac{1}{K}
+\sum_{i=1}^{K}
+\widehat{\boldsymbol{\beta}}_{-i}.
+\]
+
+An alternative finite-sample version, sometimes used in GEE applications,
+centers the deleted-cluster estimates at the full-sample estimate and applies
+a degrees-of-freedom correction:
+\[
+\widehat{\operatorname{Var}}_{\mathrm{JK}}
+\left(
+\widehat{\boldsymbol{\beta}}
+\right)
+=
+\frac{K-p}{K}
+\sum_{i=1}^{K}
+\left(
+\widehat{\boldsymbol{\beta}}_{-i}
+-
+\widehat{\boldsymbol{\beta}}
+\right)
+\left(
+\widehat{\boldsymbol{\beta}}_{-i}
+-
+\widehat{\boldsymbol{\beta}}
+\right)^{T},
+\]
+where \(p\) is the number of estimated regression parameters. The exact
+scaling convention may differ across references and software packages.
+
+The jackknife standard error for the \(j\)-th regression coefficient is
+\[
+\operatorname{SE}_{\mathrm{JK}}
+\left(
+\widehat{\beta}_j
+\right)
+=
+\sqrt{
+\left[
+\widehat{\operatorname{Var}}_{\mathrm{JK}}
+\left(
+\widehat{\boldsymbol{\beta}}
+\right)
+\right]_{jj}
+}.
+\]
+
+For a small number of clusters, inference is commonly based on a
+\(t\)-distribution rather than the standard normal distribution:
+\[
+T_j
+=
+\frac{
+\widehat{\beta}_j-\beta_{j,0}
+}{
+\operatorname{SE}_{\mathrm{JK}}
+\left(
+\widehat{\beta}_j
+\right)
+}
+\overset{\cdot}{\sim}
+t_{K-p}.
+\]
+An approximate \(100(1-\alpha)\%\) confidence interval is therefore
+\[
+\widehat{\beta}_j
+\pm
+t_{K-p,\,1-\alpha/2}
+\operatorname{SE}_{\mathrm{JK}}
+\left(
+\widehat{\beta}_j
+\right).
+\]
+Thus, the ordinary sandwich estimator is generally appropriate when the
+number of independent clusters is large, whereas a jackknife or another
+small-sample corrected variance estimator is preferable when \(K\) is small.
+
+\subsection*{R Implementation for GEE}
+
+The \texttt{geepack} package can be used to fit generalized estimating
+equations through \texttt{geeglm()}.
+
+\begin{verbatim}
+library(geepack)
+
+fit <- geeglm(
+  y ~ x1 + x2,
+  id = cluster_id,
+  data = dat,
+  family = binomial(),
+  corstr = "exchangeable",
+  std.err = "fij"
+)
+\end{verbatim}
+
+The main standard-error options are
+\[
+\begin{array}{ll}
+\texttt{san.se} & \text{ordinary sandwich standard errors},\\
+\texttt{j1s}    & \text{one-step jackknife standard errors},\\
+\texttt{jack}   & \text{approximate jackknife standard errors},\\
+\texttt{fij}    & \text{fully iterated jackknife standard errors}.
+\end{array}
+\]
+
+For a small number of clusters, \texttt{std.err = "fij"} is generally
+preferred.
+
+Small-sample corrected inference can also be performed using the
+\texttt{clubSandwich} package:
+
+\begin{verbatim}
+library(clubSandwich)
+
+coef_test(
+  fit,
+  vcov = "CR2",
+  cluster = dat$cluster_id,
+  test = "Satterthwaite"
+)
+\end{verbatim}
+
+Thus, a practical choice is
+\[
+\boxed{
+\texttt{geepack::geeglm()}
+\text{ for GEE fitting, and }
+\texttt{clubSandwich::coef\_test()}
+\text{ for small-sample corrected inference.}
+}
+\]
+\end{document}
