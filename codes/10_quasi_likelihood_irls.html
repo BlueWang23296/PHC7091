@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quasi-Likelihood: IRLS</title>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.55;color:#1f2933;}h1,h2{line-height:1.2;}code{font-family:Menlo,Consolas,monospace;}pre{background:#f6f8fa;border:1px solid #d8dee4;border-radius:6px;padding:14px;overflow:auto;}p{margin:0 0 14px;}hr{border:0;border-top:1px solid #ddd;}</style>
+</head>
+<body>
+<p>Source: <code>pasted-text.txt</code></p>
+<h2>Topic</h2>
+<p>IRLS estimates $\beta$ using a working response and weights.
+For $V(\mu)=\mu(1-\mu)$ and logit link, $g'(\mu)=1/[\mu(1-\mu)]$ and $W_i=1/[V(\mu_i)g'(\mu_i)^2]$.</p>
+<pre><code class="language-r">v.mu &lt;- function(mu) mu * (1 - mu)
+g.first &lt;- function(mu) 1 / (mu * (1 - mu))
+
+mu.hat &lt;- (y + mean(y)) / 2
+W0 &lt;- diag(as.vector(1 / (v.mu(mu.hat) * g.first(mu.hat)^2)))
+z0 &lt;- log(mu.hat / (1 - mu.hat)) + g.first(mu.hat) * (y - mu.hat)
+
+beta1 &lt;- solve(t(X) %*% W0 %*% X) %*% t(X) %*% W0 %*% z0
+beta0 &lt;- beta1 + 1
+
+while (max(abs(beta0 - beta1)) &gt; 0.000001) {
+  beta0 &lt;- beta1
+  eta0 &lt;- X %*% beta0
+  mu.hat &lt;- exp(eta0) / (1 + exp(eta0))
+  z0 &lt;- eta0 + g.first(mu.hat) * (y - mu.hat)
+  W0 &lt;- diag(as.vector(1 / (v.mu(mu.hat) * g.first(mu.hat)^2)))
+  beta1 &lt;- solve(t(X) %*% W0 %*% X) %*% t(X) %*% W0 %*% z0
+}
+
+print(beta1)
+</code></pre>
+<p>After fitting, estimate scale and Pearson residuals.</p>
+<pre><code class="language-r">y.fit &lt;- exp(X %*% beta1) / (1 + exp(X %*% beta1))
+sigma &lt;- sum((y - y.fit)^2 / v.mu(y.fit)) / 72
+
+var.beta &lt;- sigma * solve(t(X) %*% W0 %*% X)
+sd.beta &lt;- sqrt(diag(var.beta))
+
+r.p &lt;- (y - y.fit) / sqrt(v.mu(y.fit) * sigma)
+plot(log(y.fit / (1 - y.fit)), r.p,
+     xlab = &quot;eta&quot;, ylab = &quot;Pearson's residual&quot;)
+abline(h = 0, lty = 2)
+</code></pre>
+
+</body>
+</html>
+
